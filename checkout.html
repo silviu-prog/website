@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Comandă — YESHUA | Silviu Rotariu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C4922A; --gold-light: #E8C87A; --gold-dark: #8B6318;
+    --crimson: #8B1A1A; --cream: #F5F0E8; --cream-dark: #EDE5D5;
+    --parchment: #FAF7F2; --warm-dark: #1C1208; --warm-brown: #3D2B1A;
+    --text-main: #2C1E0F; --text-muted: #6B5740; --border: rgba(196,146,42,0.25);
+    --error: #C44141; --success: #4A7C3F;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: var(--parchment);
+    color: var(--text-main);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--warm-dark);
+    padding: 18px 48px;
+    border-bottom: 1px solid rgba(196,146,42,0.3);
+  }
+  .header-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    letter-spacing: 0.12em;
+  }
+  .back-link {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.6);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--gold-light); }
+
+  /* Page title */
+  .page-title {
+    text-align: center;
+    padding: 48px 24px 32px;
+    background: var(--cream);
+    border-bottom: 1px solid var(--border);
+  }
+  .page-title .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .page-title h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+    font-weight: 700;
+    color: var(--warm-brown);
+    line-height: 1.2;
+  }
+
+  /* Main layout */
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+    align-items: start;
+  }
+
+  /* Form column */
+  .form-section {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.03);
+  }
+  .section-heading {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+    letter-spacing: 0.08em;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .section-heading .num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--gold);
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.85rem;
+  }
+
+  /* Product cards */
+  .product-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .product-card {
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    background: var(--parchment);
+  }
+  .product-card:hover { border-color: var(--gold); }
+  .product-card.selected {
+    border-color: var(--gold);
+    background: rgba(196,146,42,0.06);
+    box-shadow: 0 4px 16px rgba(196,146,42,0.15);
+  }
+  .product-card input { position: absolute; opacity: 0; }
+  .product-card .badge {
+    display: inline-block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+    background: rgba(196,146,42,0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+  }
+  .product-card h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    color: var(--warm-brown);
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+  .product-card .desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .product-card .price {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold-dark);
+  }
+  .product-card .price small {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 4px;
+  }
+
+  /* Form fields */
+  .field-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .field { margin-bottom: 18px; }
+  .field.full { grid-column: 1 / -1; }
+  .field label {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--warm-brown);
+    margin-bottom: 8px;
+  }
+  .field label .req { color: var(--crimson); margin-left: 2px; }
+  .field input, .field select, .field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    font-family: 'EB Garamond', serif;
+    font-size: 1rem;
+    color: var(--text-main);
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: #fff;
+  }
+  .field textarea { resize: vertical; min-height: 88px; }
+  .field .hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* Shipping options */
+  .shipping-options { display: grid; gap: 10px; }
+  .shipping-card {
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: var(--parchment);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .shipping-card:hover { border-color: var(--gold); }
+  .shipping-card.selected {
+    border-color: var(--gold);
+    background: rgba(196,146,42,0.06);
+  }
+  .shipping-card input { position: absolute; opacity: 0; }
+  .shipping-card .label {
+    font-weight: 600;
+    color: var(--warm-brown);
+  }
+  .shipping-card .sublabel {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .shipping-card .cost {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: var(--gold-dark);
+  }
+
+  /* Payment method */
+  .payment-info {
+    background: rgba(196,146,42,0.08);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .payment-info .icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  .payment-info strong {
+    display: block;
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    color: var(--warm-brown);
+    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+  }
+  .payment-info p {
+    font-size: 0.92rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+  }
+
+  /* Order summary */
+  .summary {
+    position: sticky;
+    top: 24px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  }
+  .summary h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.95rem;
+  }
+  .summary-line .label { color: var(--text-muted); }
+  .summary-line .value { font-weight: 600; color: var(--warm-brown); }
+  .summary-total {
+    margin-top: 14px;
+    padding-top: 18px;
+    border-top: 2px solid var(--gold);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .summary-total .label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--warm-brown);
+    font-weight: 700;
+  }
+  .summary-total .value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: var(--gold-dark);
+  }
+  .summary-total .currency {
+    font-size: 1rem;
+    color: var(--text-muted);
+    font-weight: 400;
+    margin-left: 6px;
+  }
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--warm-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 24px;
+    transition: all 0.3s;
+    box-shadow: 0 4px 16px rgba(196,146,42,0.3);
+  }
+  .btn-submit:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(196,146,42,0.45);
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  }
+  .btn-submit:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .summary-note {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 16px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* Error / message */
+  .form-error {
+    background: rgba(196,65,65,0.08);
+    border: 1px solid var(--error);
+    color: var(--error);
+    padding: 12px 16px;
+    border-radius: 5px;
+    margin-bottom: 16px;
+    font-size: 0.92rem;
+    display: none;
+  }
+  .form-error.visible { display: block; }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    main {
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 32px 16px 64px;
+    }
+    .summary { position: static; }
+    .product-options { grid-template-columns: 1fr; }
+    .field-grid { grid-template-columns: 1fr; }
+    header { padding: 16px 24px; }
+    .form-section { padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="/" class="logo">YESHUA</a>
+    <a href="/" class="back-link">← Înapoi pe site</a>
+  </div>
+</header>
+
+<div class="page-title">
+  <div class="eyebrow">Comandă</div>
+  <h1>Finalizare comandă</h1>
+</div>
+
+<form id="checkoutForm">
+  <main>
+    <div>
+      <!-- Step 1: Product -->
+      <section class="form-section">
+        <h2 class="section-heading"><span class="num">1</span> Alege formatul</h2>
+        <div class="product-options">
+          <label class="product-card selected" data-product="fizica" data-price="45">
+            <input type="radio" name="product" value="fizica" checked />
+            <span class="badge">Tipărit</span>
+            <h3>Carte fizică</h3>
+            <p class="desc">Format tipărit, copertă mată, ~280 pagini. Livrare prin curier.</p>
+            <div class="price">45<small>RON</small></div>
+          </label>
+          <label class="product-card" data-product="digitala" data-price="25">
+            <input type="radio" name="product" value="digitala" />
+            <span class="badge">PDF + EPUB</span>
+            <h3>Carte digitală</h3>
+            <p class="desc">Format PDF și EPUB. Acces imediat pe email după confirmarea plății.</p>
+            <div class="price">25<small>RON</small></div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Step 2: Customer info -->
+      <section class="form-section">
+        <h2 class="section-heading"><span class="num">2</span> Datele tale</h2>
+        <div class="field-grid">
+          <div class="field">
+            <label>Nume complet <span class="req">*</span></label>
+            <input type="text" name="customerName" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label>Telefon <span class="req">*</span></label>
+            <input type="tel" name="customerPhone" required autocomplete="tel" placeholder="07XX XXX XXX" />
+          </div>
+          <div class="field full">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" name="customerEmail" required autocomplete="email" />
+            <p class="hint">Aici primești confirmarea comenzii și (pentru cartea digitală) link-ul de descărcare.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 3: Shipping (only for physical) -->
+      <section class="form-section" id="shippingSection">
+        <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
+
+        <div class="field">
+          <label>Țara <span class="req">*</span></label>
+          <select name="shippingCountry" id="countrySelect" required>
+            <option value="RO" selected>România</option>
+            <optgroup label="Uniunea Europeană">
+              <option value="AT">Austria</option>
+              <option value="BE">Belgia</option>
+              <option value="BG">Bulgaria</option>
+              <option value="HR">Croația</option>
+              <option value="CY">Cipru</option>
+              <option value="CZ">Cehia</option>
+              <option value="DK">Danemarca</option>
+              <option value="EE">Estonia</option>
+              <option value="FI">Finlanda</option>
+              <option value="FR">Franța</option>
+              <option value="DE">Germania</option>
+              <option value="GR">Grecia</option>
+              <option value="HU">Ungaria</option>
+              <option value="IE">Irlanda</option>
+              <option value="IT">Italia</option>
+              <option value="LV">Letonia</option>
+              <option value="LT">Lituania</option>
+              <option value="LU">Luxemburg</option>
+              <option value="MT">Malta</option>
+              <option value="NL">Olanda</option>
+              <option value="PL">Polonia</option>
+              <option value="PT">Portugalia</option>
+              <option value="SK">Slovacia</option>
+              <option value="SI">Slovenia</option>
+              <option value="ES">Spania</option>
+              <option value="SE">Suedia</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="field-grid">
+          <div class="field full">
+            <label>Stradă, număr, bloc, apartament <span class="req">*</span></label>
+            <input type="text" name="shippingAddress" autocomplete="street-address" />
+          </div>
+          <div class="field">
+            <label>Localitate <span class="req">*</span></label>
+            <input type="text" name="shippingCity" autocomplete="address-level2" />
+          </div>
+          <div class="field">
+            <label>Cod poștal <span class="req">*</span></label>
+            <input type="text" name="shippingPostal" autocomplete="postal-code" />
+          </div>
+          <div class="field full">
+            <label>Județ / Regiune</label>
+            <input type="text" name="shippingRegion" autocomplete="address-level1" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Payment -->
+      <section class="form-section">
+        <h2 class="section-heading"><span class="num">4</span> Metoda de plată</h2>
+        <div class="payment-info" id="paymentInfo">
+          <div class="icon">💰</div>
+          <div>
+            <strong id="paymentTitle">Ramburs la livrare</strong>
+            <p id="paymentDesc">Plătești în numerar curierului, la primirea coletului. Disponibil în toată România.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 5: Notes -->
+      <section class="form-section">
+        <h2 class="section-heading"><span class="num">5</span> Mențiuni (opțional)</h2>
+        <div class="field">
+          <label>Dedicație, mesaj sau alte detalii</label>
+          <textarea name="notes" placeholder="Ex: vă rog să livrați după ora 18..."></textarea>
+        </div>
+      </section>
+    </div>
+
+    <!-- Summary sidebar -->
+    <aside>
+      <div class="summary">
+        <h2>Comanda ta</h2>
+        <div id="errorBox" class="form-error"></div>
+
+        <div class="summary-line">
+          <span class="label" id="sumProduct">Carte fizică × 1</span>
+          <span class="value" id="sumProductPrice">45 RON</span>
+        </div>
+        <div class="summary-line">
+          <span class="label">Livrare</span>
+          <span class="value" id="sumShipping">15 RON</span>
+        </div>
+
+        <div class="summary-total">
+          <span class="label">Total</span>
+          <span><span class="value" id="sumTotal">60</span><span class="currency" id="sumCurrency">RON</span></span>
+        </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">Trimite comanda</button>
+        <p class="summary-note">Vei primi un email de confirmare cu detaliile comenzii. Nu este nevoie de cont sau de plată online.</p>
+      </div>
+    </aside>
+  </main>
+</form>
+
+<script>
+  // ── Pricing logic ─────────────────────────────────────────────
+  const PRICES = {
+    fizica:    { value: 45, label: 'Carte fizică' },
+    digitala:  { value: 25, label: 'Carte digitală' }
+  };
+  const SHIPPING = {
+    RO_FIZICA:    { value: 15, label: 'Curier România' },
+    EU_FIZICA:    { value: 45, label: 'Curier UE' },
+    DIGITALA:     { value: 0,  label: 'Livrare prin email' }
+  };
+
+  const form = document.getElementById('checkoutForm');
+  const productCards = document.querySelectorAll('.product-card');
+  const shippingSection = document.getElementById('shippingSection');
+  const countrySelect = document.getElementById('countrySelect');
+  const paymentTitle = document.getElementById('paymentTitle');
+  const paymentDesc = document.getElementById('paymentDesc');
+
+  function getSelectedProduct() {
+    const checked = document.querySelector('input[name="product"]:checked');
+    return checked ? checked.value : 'fizica';
+  }
+  function getShippingPrice() {
+    const product = getSelectedProduct();
+    if (product === 'digitala') return SHIPPING.DIGITALA;
+    const country = countrySelect.value;
+    return country === 'RO' ? SHIPPING.RO_FIZICA : SHIPPING.EU_FIZICA;
+  }
+  function updateSummary() {
+    const product = getSelectedProduct();
+    const productData = PRICES[product];
+    const shipping = getShippingPrice();
+    const total = productData.value + shipping.value;
+
+    document.getElementById('sumProduct').textContent = productData.label + ' × 1';
+    document.getElementById('sumProductPrice').textContent = productData.value + ' RON';
+    document.getElementById('sumShipping').textContent = shipping.value === 0 ? 'Gratuit (email)' : shipping.value + ' RON';
+    document.getElementById('sumTotal').textContent = total;
+    document.getElementById('sumCurrency').textContent = 'RON';
+
+    // Toggle shipping section visibility
+    if (product === 'digitala') {
+      shippingSection.style.display = 'none';
+      shippingSection.querySelectorAll('[required]').forEach(el => el.dataset.wasRequired = '1' && el.removeAttribute('required'));
+      paymentTitle.textContent = 'Transfer bancar';
+      paymentDesc.textContent = 'După plasarea comenzii, primești pe email datele bancare pentru transfer. Cartea (PDF + EPUB) îți este trimisă imediat ce plata este confirmată.';
+    } else {
+      shippingSection.style.display = 'block';
+      shippingSection.querySelectorAll('input, select').forEach(el => {
+        if (el.dataset.wasRequired === '1' || ['shippingAddress','shippingCity','shippingPostal','shippingCountry'].includes(el.name)) {
+          el.setAttribute('required', '');
+        }
+      });
+      if (countrySelect.value === 'RO') {
+        paymentTitle.textContent = 'Ramburs la livrare';
+        paymentDesc.textContent = 'Plătești în numerar curierului, la primirea coletului. Disponibil în toată România.';
+      } else {
+        paymentTitle.textContent = 'Transfer bancar';
+        paymentDesc.textContent = 'Pentru comenzi în UE, plata se face prin transfer bancar înainte de expediere. Detaliile bancare îți sunt trimise pe email.';
+      }
+    }
+  }
+
+  productCards.forEach(card => {
+    card.addEventListener('click', () => {
+      productCards.forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      card.querySelector('input').checked = true;
+      updateSummary();
+    });
+  });
+  countrySelect.addEventListener('change', updateSummary);
+
+  // Preselect product based on ?product= URL param (e.g. /checkout?product=digitala)
+  const urlProduct = new URLSearchParams(location.search).get('product');
+  if (urlProduct && PRICES[urlProduct]) {
+    productCards.forEach(c => c.classList.remove('selected'));
+    const target = document.querySelector('.product-card[data-product="' + urlProduct + '"]');
+    if (target) {
+      target.classList.add('selected');
+      target.querySelector('input').checked = true;
+    }
+  }
+
+  updateSummary();
+
+  // ── Submit handler ────────────────────────────────────────────
+  const errorBox = document.getElementById('errorBox');
+  const submitBtn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    errorBox.classList.remove('visible');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Se trimite...';
+
+    const fd = new FormData(form);
+    const product = fd.get('product');
+    const productData = PRICES[product];
+    const shipping = getShippingPrice();
+    const total = productData.value + shipping.value;
+
+    const payload = {
+      product: product,
+      productLabel: productData.label,
+      unitPrice: productData.value,
+      quantity: 1,
+      shippingMethod: shipping.label,
+      shippingPrice: shipping.value,
+      total: total,
+      currency: 'RON',
+      paymentMethod: paymentTitle.textContent,
+      customer: {
+        name:  fd.get('customerName'),
+        email: fd.get('customerEmail'),
+        phone: fd.get('customerPhone')
+      },
+      shipping: product === 'fizica' ? {
+        country: fd.get('shippingCountry'),
+        address: fd.get('shippingAddress'),
+        city:    fd.get('shippingCity'),
+        postal:  fd.get('shippingPostal'),
+        region:  fd.get('shippingRegion') || ''
+      } : null,
+      notes: fd.get('notes') || ''
+    };
+
+    try {
+      const resp = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await resp.json();
+      if (!resp.ok || !data.success) {
+        throw new Error(data.error || 'Eroare la trimiterea comenzii');
+      }
+      // Redirect to thank-you page
+      window.location.href = '/thank-you?id=' + encodeURIComponent(data.orderId);
+    } catch (err) {
+      errorBox.textContent = err.message || 'A apărut o eroare. Te rugăm încearcă din nou sau contactează-ne.';
+      errorBox.classList.add('visible');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Trimite comanda';
+    }
+  });
+</script>
+
+</body>
+</html>

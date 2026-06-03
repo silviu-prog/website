@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mulțumim! — YESHUA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C4922A; --gold-light: #E8C87A; --gold-dark: #8B6318;
+    --cream: #F5F0E8; --parchment: #FAF7F2; --warm-dark: #1C1208;
+    --warm-brown: #3D2B1A; --text-main: #2C1E0F; --text-muted: #6B5740;
+    --border: rgba(196,146,42,0.25); --success: #4A7C3F;
+  }
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: linear-gradient(160deg, #0D0804 0%, #1C1208 50%, #0D0804 100%);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(ellipse, rgba(232,200,122,0.15) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .card {
+    position: relative;
+    background: rgba(28, 18, 8, 0.6);
+    border: 1px solid rgba(196,146,42,0.3);
+    border-radius: 12px;
+    padding: 56px 48px;
+    max-width: 560px;
+    width: 100%;
+    text-align: center;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+  }
+  .check-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 40px rgba(196,146,42,0.4);
+  }
+  .check-icon svg { color: var(--warm-dark); }
+
+  .eyebrow {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 18px;
+  }
+  .lead {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.75;
+    margin-bottom: 28px;
+  }
+  .order-id-box {
+    background: rgba(196,146,42,0.08);
+    border: 1px solid rgba(196,146,42,0.25);
+    border-radius: 8px;
+    padding: 18px 24px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .order-id-box .label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.22em;
+    color: rgba(255,255,255,0.55);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .order-id-box .value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.2rem;
+    color: var(--gold-light);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .next-steps {
+    text-align: left;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--gold);
+    padding: 18px 22px;
+    margin-bottom: 32px;
+    border-radius: 0 6px 6px 0;
+  }
+  .next-steps h3 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    font-weight: 700;
+  }
+  .next-steps ul {
+    list-style: none;
+    padding: 0;
+  }
+  .next-steps li {
+    color: rgba(255,255,255,0.75);
+    font-size: 0.98rem;
+    line-height: 1.7;
+    padding: 6px 0 6px 24px;
+    position: relative;
+  }
+  .next-steps li::before {
+    content: '✦';
+    position: absolute;
+    left: 0;
+    color: var(--gold);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: transparent;
+    color: var(--gold-light);
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border: 1px solid rgba(196,146,42,0.45);
+    border-radius: 4px;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .btn:hover {
+    border-color: var(--gold);
+    background: rgba(196,146,42,0.1);
+  }
+
+  @media (max-width: 600px) {
+    .card { padding: 40px 28px; }
+  }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="check-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M13.485 1.929a1 1 0 0 1 1.414 1.414l-8.485 8.485a1 1 0 0 1-1.414 0L1.929 8.757a1 1 0 1 1 1.414-1.414L5.485 9.485l7.07-7.07a1 1 0 0 1 .93-.486z"/>
+      </svg>
+    </div>
+
+    <div class="eyebrow">Mulțumim</div>
+    <h1>Comanda ta a fost primită!</h1>
+    <p class="lead">
+      Apreciem încrederea ta. Vom procesa comanda în următoarele ore lucrătoare și vei primi un email cu detaliile finale.
+    </p>
+
+    <div class="order-id-box">
+      <span class="label">Număr comandă</span>
+      <span class="value" id="orderId">—</span>
+    </div>
+
+    <div class="next-steps">
+      <h3>Ce urmează</h3>
+      <ul>
+        <li>Vei primi un email de confirmare în maxim 1 oră</li>
+        <li>Pentru cartea fizică: livrare 2-5 zile lucrătoare în România</li>
+        <li>Pentru cartea digitală: link de descărcare după confirmarea plății</li>
+        <li>Pentru orice întrebare: scrie la <a href="mailto:contact@yeshuabook.com" style="color:var(--gold-light)">contact@yeshuabook.com</a></li>
+      </ul>
+    </div>
+
+    <a href="/" class="btn">← Înapoi pe site</a>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get('id');
+    document.getElementById('orderId').textContent = orderId || '—';
+  </script>
+</body>
+</html>

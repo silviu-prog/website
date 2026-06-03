@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Panou Comenzi — YESHUA</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C4922A; --gold-light: #E8C87A; --gold-dark: #8B6318;
+    --cream: #F5F0E8; --parchment: #FAF7F2; --warm-dark: #1C1208;
+    --warm-brown: #3D2B1A; --text-main: #2C1E0F; --text-muted: #6B5740;
+    --border: rgba(196,146,42,0.25);
+    --status-new: #C44141; --status-confirmed: #C9963C;
+    --status-shipped: #4A7C9D; --status-delivered: #4A7C3F;
+    --status-cancelled: #888;
+  }
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: var(--parchment);
+    color: var(--text-main);
+    min-height: 100vh;
+  }
+  code, .mono { font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+
+  /* ── Login Screen ─────────────────────────────────────────── */
+  .login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #0D0804 0%, #1C1208 50%, #0D0804 100%);
+    padding: 32px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  .login-screen::before {
+    content: '';
+    position: absolute;
+    top: -10%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(ellipse, rgba(232,200,122,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .login-card {
+    position: relative;
+    background: rgba(28, 18, 8, 0.7);
+    border: 1px solid rgba(196,146,42,0.3);
+    border-radius: 12px;
+    padding: 44px 40px;
+    max-width: 420px;
+    width: 100%;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+    text-align: center;
+  }
+  .login-card .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.6rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .login-card .subtitle {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 36px;
+  }
+  .login-card h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    color: var(--gold-light);
+    margin-bottom: 24px;
+    letter-spacing: 0.08em;
+  }
+  .login-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(196,146,42,0.3);
+    border-radius: 5px;
+    color: #fff;
+    font-family: 'EB Garamond', serif;
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .login-input:focus {
+    outline: none;
+    border-color: var(--gold);
+    background: rgba(255,255,255,0.08);
+  }
+  .login-input::placeholder { color: rgba(255,255,255,0.3); }
+  .login-btn {
+    width: 100%;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--warm-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    padding: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .login-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(196,146,42,0.4);
+  }
+  .login-error {
+    color: var(--status-new);
+    font-size: 0.9rem;
+    margin-top: 12px;
+    min-height: 1.2em;
+  }
+
+  /* ── Dashboard ────────────────────────────────────────────── */
+  .dashboard { display: none; }
+  .dashboard.active { display: block; }
+
+  .top-bar {
+    background: var(--warm-dark);
+    border-bottom: 1px solid rgba(196,146,42,0.3);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .top-bar .brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .top-bar .logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.12em;
+  }
+  .top-bar .panel-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    padding-left: 14px;
+    border-left: 1px solid rgba(255,255,255,0.15);
+  }
+  .top-bar-actions { display: flex; gap: 10px; align-items: center; }
+  .btn-icon {
+    background: transparent;
+    border: 1px solid rgba(196,146,42,0.3);
+    color: rgba(255,255,255,0.7);
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-icon:hover { border-color: var(--gold); color: var(--gold-light); }
+
+  /* Stats row */
+  .stats-row {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 32px 8px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+  }
+  .stat-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    transition: border-color 0.2s;
+  }
+  .stat-card.clickable { cursor: pointer; }
+  .stat-card.clickable:hover { border-color: var(--gold); }
+  .stat-card .label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.22em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .stat-card .value {
+    font-family: 'Cinzel', serif;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+  }
+  .stat-card .value small {
+    font-family: 'EB Garamond', serif;
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    margin-left: 4px;
+  }
+  .stat-card.active {
+    border-color: var(--gold);
+    background: rgba(196,146,42,0.05);
+  }
+
+  /* Toolbar */
+  .toolbar {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .toolbar h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.4rem;
+    color: var(--warm-brown);
+    font-weight: 700;
+  }
+  .search-input {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    background: #fff;
+    font-family: 'EB Garamond', serif;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    min-width: 280px;
+  }
+  .search-input:focus { outline: none; border-color: var(--gold); }
+
+  /* Orders table */
+  .table-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 32px 64px;
+  }
+  .orders-table {
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    border-collapse: collapse;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.03);
+  }
+  .orders-table th {
+    text-align: left;
+    padding: 14px 18px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: var(--warm-brown);
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+  }
+  .orders-table td {
+    padding: 16px 18px;
+    border-bottom: 1px solid rgba(196,146,42,0.1);
+    font-size: 0.95rem;
+    vertical-align: top;
+  }
+  .orders-table tr { transition: background 0.15s; cursor: pointer; }
+  .orders-table tbody tr:hover { background: var(--cream); }
+  .orders-table tr:last-child td { border-bottom: none; }
+  .col-id { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--text-muted); }
+  .col-customer strong { display: block; color: var(--warm-brown); }
+  .col-customer small { color: var(--text-muted); font-size: 0.85rem; }
+  .col-total { font-family: 'Cinzel', serif; font-weight: 700; color: var(--gold-dark); }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .status-badge.new       { background: rgba(196,65,65,0.12); color: var(--status-new); }
+  .status-badge.confirmed { background: rgba(201,150,60,0.15); color: var(--status-confirmed); }
+  .status-badge.shipped   { background: rgba(74,124,157,0.12); color: var(--status-shipped); }
+  .status-badge.delivered { background: rgba(74,124,63,0.15); color: var(--status-delivered); }
+  .status-badge.cancelled { background: rgba(120,120,120,0.15); color: var(--status-cancelled); text-decoration: line-through; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 80px 24px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+  .empty-state h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--warm-brown);
+    margin-bottom: 8px;
+  }
+
+  /* ── Order detail modal ───────────────────────────────────── */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+    backdrop-filter: blur(4px);
+  }
+  .modal-backdrop.active { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 10px;
+    max-width: 720px;
+    width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.4);
+  }
+  .modal-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    background: var(--cream);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 10px 10px 0 0;
+  }
+  .modal-header h3 {
+    font-family: 'Cinzel', serif;
+    color: var(--warm-brown);
+    font-size: 1.2rem;
+  }
+  .modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 4px;
+  }
+  .modal-close:hover { background: rgba(0,0,0,0.05); color: var(--text-main); }
+  .modal-body { padding: 32px; }
+
+  .detail-section { margin-bottom: 28px; }
+  .detail-section h4 {
+    font-family: 'Cinzel', serif;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 18px;
+  }
+  .detail-grid dt {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  .detail-grid dd {
+    font-size: 0.95rem;
+    color: var(--warm-brown);
+    word-break: break-word;
+  }
+  .detail-grid dd.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+
+  /* Status actions */
+  .status-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .status-btn {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .status-btn:hover { border-color: var(--gold); background: rgba(196,146,42,0.05); }
+  .status-btn.current {
+    background: var(--gold);
+    color: var(--warm-dark);
+    border-color: var(--gold);
+    cursor: default;
+  }
+  .status-btn.danger { color: var(--status-new); border-color: rgba(196,65,65,0.3); }
+  .status-btn.danger:hover { background: rgba(196,65,65,0.06); border-color: var(--status-new); }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .toast {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    background: var(--warm-brown);
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    font-size: 0.95rem;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .toast.visible { opacity: 1; transform: translateY(0); }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-input { min-width: 0; width: 100%; }
+    .orders-table { font-size: 0.9rem; }
+    .orders-table th, .orders-table td { padding: 12px 10px; }
+    .col-date, .col-payment { display: none; }
+    .detail-grid { grid-template-columns: 1fr; gap: 4px 0; }
+    .detail-grid dt { margin-top: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Login Screen ────────────────────────────────────────── -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <span class="logo">YESHUA</span>
+    <div class="subtitle">Panou Comenzi</div>
+    <h1>Acces administrator</h1>
+    <form id="loginForm">
+      <input type="text" id="usernameInput" class="login-input" placeholder="Utilizator" autocomplete="username" required />
+      <input type="password" id="passwordInput" class="login-input" placeholder="Parolă" autocomplete="current-password" required />
+      <button type="submit" class="login-btn">Intră</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Dashboard ────────────────────────────────────────────── -->
+<div id="dashboard" class="dashboard">
+  <header class="top-bar">
+    <div class="brand">
+      <span class="logo">YESHUA</span>
+      <span class="panel-label">Panou Comenzi</span>
+    </div>
+    <div class="top-bar-actions">
+      <button class="btn-icon" id="refreshBtn">↻ Reîncarcă</button>
+      <button class="btn-icon" id="logoutBtn">Ieșire</button>
+    </div>
+  </header>
+
+  <div class="stats-row" id="statsRow"></div>
+
+  <div class="toolbar">
+    <h2 id="tableTitle">Toate comenzile</h2>
+    <input type="search" id="searchInput" class="search-input" placeholder="Caută după nume, email, telefon, ID..." />
+  </div>
+
+  <div class="table-wrap">
+    <div id="ordersContainer"></div>
+  </div>
+</div>
+
+<!-- ── Order Detail Modal ──────────────────────────────────── -->
+<div id="modalBackdrop" class="modal-backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Detalii comandă</h3>
+      <button class="modal-close" id="modalClose">×</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // ── State ────────────────────────────────────────────────────
+  let orders = [];
+  let activeFilter = 'all';
+  let searchTerm = '';
+  let authToken = localStorage.getItem('yeshua_admin_token') || '';
+
+  const STATUS_LABELS = {
+    new:       'Nouă',
+    confirmed: 'Confirmată',
+    shipped:   'Expediată',
+    delivered: 'Livrată',
+    cancelled: 'Anulată'
+  };
+  const STATUS_ORDER = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+
+  // ── Login ────────────────────────────────────────────────────
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = document.getElementById('usernameInput').value.trim();
+    const pwd  = document.getElementById('passwordInput').value;
+    const credentials = user + ':' + pwd;
+    const errEl = document.getElementById('loginError');
+    errEl.textContent = '';
+    try {
+      const r = await fetch('/api/admin/orders', {
+        headers: { 'X-Admin-Token': credentials }
+      });
+      if (!r.ok) throw new Error('Utilizator sau parolă incorectă');
+      authToken = credentials;
+      localStorage.setItem('yeshua_admin_token', credentials);
+      const data = await r.json();
+      orders = data.orders || [];
+      showDashboard();
+    } catch (err) {
+      errEl.textContent = err.message || 'Eroare la autentificare';
+    }
+  });
+
+  function showDashboard() {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').classList.add('active');
+    renderStats();
+    renderOrders();
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem('yeshua_admin_token');
+    authToken = '';
+    location.reload();
+  });
+
+  // ── Auto-login if token stored ───────────────────────────────
+  if (authToken) {
+    fetch('/api/admin/orders', { headers: { 'X-Admin-Token': authToken } })
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => { orders = data.orders || []; showDashboard(); })
+      .catch(() => { localStorage.removeItem('yeshua_admin_token'); authToken = ''; });
+  }
+
+  // ── Refresh ──────────────────────────────────────────────────
+  document.getElementById('refreshBtn').addEventListener('click', refresh);
+  async function refresh() {
+    try {
+      const r = await fetch('/api/admin/orders', { headers: { 'X-Admin-Token': authToken } });
+      if (!r.ok) throw new Error();
+      const data = await r.json();
+      orders = data.orders || [];
+      renderStats();
+      renderOrders();
+      toast('Listă actualizată');
+    } catch { toast('Eroare la reîncărcare'); }
+  }
+
+  // ── Search ───────────────────────────────────────────────────
+  document.getElementById('searchInput').addEventListener('input', (e) => {
+    searchTerm = e.target.value.toLowerCase().trim();
+    renderOrders();
+  });
+
+  // ── Render stats ─────────────────────────────────────────────
+  function renderStats() {
+    const counts = { all: orders.length, new: 0, confirmed: 0, shipped: 0, delivered: 0 };
+    let totalRevenue = 0;
+    orders.forEach(o => {
+      if (counts[o.status] !== undefined) counts[o.status]++;
+      if (o.status !== 'cancelled') totalRevenue += o.total;
+    });
+    const html = `
+      <div class="stat-card clickable ${activeFilter==='all'?'active':''}" data-filter="all">
+        <div class="label">Total comenzi</div>
+        <div class="value">${counts.all}</div>
+      </div>
+      <div class="stat-card clickable ${activeFilter==='new'?'active':''}" data-filter="new">
+        <div class="label">Noi</div>
+        <div class="value">${counts.new}</div>
+      </div>
+      <div class="stat-card clickable ${activeFilter==='confirmed'?'active':''}" data-filter="confirmed">
+        <div class="label">Confirmate</div>
+        <div class="value">${counts.confirmed}</div>
+      </div>
+      <div class="stat-card clickable ${activeFilter==='shipped'?'active':''}" data-filter="shipped">
+        <div class="label">Expediate</div>
+        <div class="value">${counts.shipped}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Venit total (active)</div>
+        <div class="value">${totalRevenue}<small>RON</small></div>
+      </div>
+    `;
+    const el = document.getElementById('statsRow');
+    el.innerHTML = html;
+    el.querySelectorAll('[data-filter]').forEach(card => {
+      card.addEventListener('click', () => {
+        activeFilter = card.dataset.filter;
+        renderStats();
+        renderOrders();
+      });
+    });
+  }
+
+  // ── Render orders table ──────────────────────────────────────
+  function renderOrders() {
+    document.getElementById('tableTitle').textContent =
+      activeFilter === 'all' ? 'Toate comenzile' : 'Comenzi: ' + (STATUS_LABELS[activeFilter] || activeFilter);
+
+    let filtered = orders;
+    if (activeFilter !== 'all') filtered = filtered.filter(o => o.status === activeFilter);
+    if (searchTerm) {
+      filtered = filtered.filter(o => {
+        const haystack = [
+          o.id, o.customerName, o.customerEmail, o.customerPhone, o.notes
+        ].filter(Boolean).join(' ').toLowerCase();
+        return haystack.includes(searchTerm);
+      });
+    }
+
+    const container = document.getElementById('ordersContainer');
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📭</div>
+          <h3>${orders.length === 0 ? 'Niciun comandă încă' : 'Nicio comandă în această categorie'}</h3>
+          <p>${orders.length === 0 ? 'Când clienții vor plasa comenzi, vor apărea aici.' : 'Schimbă filtrul sau caută altceva.'}</p>
+        </div>`;
+      return;
+    }
+
+    const rows = filtered.map(o => `
+      <tr data-id="${o.id}">
+        <td class="col-id">${o.id.slice(0, 8)}</td>
+        <td class="col-date">${formatDate(o.created_at)}</td>
+        <td class="col-customer">
+          <strong>${esc(o.customerName)}</strong>
+          <small>${esc(o.customerEmail)}</small>
+        </td>
+        <td>${esc(o.productLabel)}</td>
+        <td class="col-payment">${esc(o.paymentMethod)}</td>
+        <td class="col-total">${o.total} ${o.currency}</td>
+        <td><span class="status-badge ${o.status}">${STATUS_LABELS[o.status] || o.status}</span></td>
+      </tr>
+    `).join('');
+
+    container.innerHTML = `
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th class="col-date">Data</th>
+            <th>Client</th>
+            <th>Produs</th>
+            <th class="col-payment">Plată</th>
+            <th>Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+
+    container.querySelectorAll('tr[data-id]').forEach(row => {
+      row.addEventListener('click', () => openOrder(row.dataset.id));
+    });
+  }
+
+  // ── Order modal ──────────────────────────────────────────────
+  function openOrder(id) {
+    const o = orders.find(x => x.id === id);
+    if (!o) return;
+
+    const sh = o.shipping_country ? `
+      <div class="detail-section">
+        <h4>Adresă livrare</h4>
+        <dl class="detail-grid">
+          <dt>Țară</dt><dd>${esc(o.shipping_country)}</dd>
+          <dt>Adresă</dt><dd>${esc(o.shipping_address || '—')}</dd>
+          <dt>Localitate</dt><dd>${esc(o.shipping_city || '—')}</dd>
+          <dt>Cod poștal</dt><dd>${esc(o.shipping_postal || '—')}</dd>
+          ${o.shipping_region ? `<dt>Județ/Regiune</dt><dd>${esc(o.shipping_region)}</dd>` : ''}
+        </dl>
+      </div>` : '';
+
+    const statusBtns = STATUS_ORDER.map(s => `
+      <button class="status-btn ${s === o.status ? 'current' : ''} ${s === 'cancelled' ? 'danger' : ''}" data-status="${s}" ${s === o.status ? 'disabled' : ''}>
+        ${STATUS_LABELS[s]}
+      </button>
+    `).join('');
+
+    document.getElementById('modalBody').innerHTML = `
+      <div class="detail-section">
+        <h4>Comandă</h4>
+        <dl class="detail-grid">
+          <dt>ID</dt><dd class="mono">${o.id}</dd>
+          <dt>Data plasării</dt><dd>${formatDate(o.created_at, true)}</dd>
+          <dt>Status</dt><dd><span class="status-badge ${o.status}">${STATUS_LABELS[o.status]}</span></dd>
+          <dt>Produs</dt><dd>${esc(o.productLabel)} × ${o.quantity}</dd>
+          <dt>Preț unitar</dt><dd>${o.unitPrice} ${o.currency}</dd>
+          <dt>Livrare</dt><dd>${esc(o.shippingMethod)} — ${o.shippingPrice} ${o.currency}</dd>
+          <dt>Plată</dt><dd>${esc(o.paymentMethod)}</dd>
+          <dt><strong>Total</strong></dt><dd><strong style="font-size:1.1em;color:var(--gold-dark);">${o.total} ${o.currency}</strong></dd>
+        </dl>
+      </div>
+
+      <div class="detail-section">
+        <h4>Client</h4>
+        <dl class="detail-grid">
+          <dt>Nume</dt><dd>${esc(o.customerName)}</dd>
+          <dt>Email</dt><dd><a href="mailto:${esc(o.customerEmail)}" style="color:var(--gold-dark)">${esc(o.customerEmail)}</a></dd>
+          <dt>Telefon</dt><dd><a href="tel:${esc(o.customerPhone)}" style="color:var(--gold-dark)">${esc(o.customerPhone)}</a></dd>
+        </dl>
+      </div>
+
+      ${sh}
+
+      ${o.notes ? `
+      <div class="detail-section">
+        <h4>Mențiuni</h4>
+        <p style="font-style:italic;color:var(--text-muted);background:var(--cream);padding:14px 18px;border-radius:6px;">${esc(o.notes)}</p>
+      </div>` : ''}
+
+      <div class="detail-section">
+        <h4>Schimbă status</h4>
+        <div class="status-actions">${statusBtns}</div>
+      </div>
+    `;
+
+    document.getElementById('modalBody').querySelectorAll('.status-btn').forEach(btn => {
+      btn.addEventListener('click', () => updateStatus(o.id, btn.dataset.status));
+    });
+    document.getElementById('modalBackdrop').classList.add('active');
+  }
+
+  document.getElementById('modalClose').addEventListener('click', closeModal);
+  document.getElementById('modalBackdrop').addEventListener('click', (e) => {
+    if (e.target.id === 'modalBackdrop') closeModal();
+  });
+  function closeModal() { document.getElementById('modalBackdrop').classList.remove('active'); }
+
+  async function updateStatus(id, status) {
+    try {
+      const r = await fetch('/api/admin/orders/' + encodeURIComponent(id), {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': authToken },
+        body: JSON.stringify({ status })
+      });
+      if (!r.ok) throw new Error();
+      const order = orders.find(o => o.id === id);
+      if (order) order.status = status;
+      closeModal();
+      renderStats();
+      renderOrders();
+      toast('Status actualizat: ' + STATUS_LABELS[status]);
+    } catch { toast('Eroare la actualizare'); }
+  }
+
+  // ── Helpers ──────────────────────────────────────────────────
+  function esc(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function formatDate(iso, full) {
+    if (!iso) return '—';
+    const d = new Date(iso);
+    if (full) return d.toLocaleString('ro-RO', { dateStyle: 'medium', timeStyle: 'short' });
+    return d.toLocaleDateString('ro-RO', { day: '2-digit', month: 'short' }) + ' ' +
+           d.toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' });
+  }
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('visible'), 2500);
+  }
+</script>
+
+</body>
+</html>

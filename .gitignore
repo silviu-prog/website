@@ -1,0 +1,19 @@
+﻿# Secrete — deploy.ps1 contine token Cloudflare
+deploy.ps1
+
+# Continut privat (cartea) — nu se urca public
+_private/
+*.pdf
+*.epub
+*.mobi
+
+# Arhive / backupuri
+zip/
+*.zip
+
+# Config local Claude
+.claude/
+
+# Cruft OS
+.DS_Store
+Thumbs.db
