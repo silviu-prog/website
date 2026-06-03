@@ -551,16 +551,25 @@
     e.preventDefault();
     const user = document.getElementById('usernameInput').value.trim();
     const pwd  = document.getElementById('passwordInput').value;
-    const credentials = user + ':' + pwd;
     const errEl = document.getElementById('loginError');
     errEl.textContent = '';
     try {
-      const r = await fetch('/api/admin/orders', {
-        headers: { 'X-Admin-Token': credentials }
+      // Exchange credentials for a short-lived signed session token.
+      const login = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pwd })
       });
-      if (!r.ok) throw new Error('Utilizator sau parolă incorectă');
-      authToken = credentials;
-      localStorage.setItem('yeshua_admin_token', credentials);
+      if (!login.ok) {
+        throw new Error(login.status === 429
+          ? 'Prea multe încercări. Așteaptă câteva minute.'
+          : 'Utilizator sau parolă incorectă');
+      }
+      const { token } = await login.json();
+      authToken = token;
+      localStorage.setItem('yeshua_admin_token', token);
+      const r = await fetch('/api/admin/orders', { headers: { 'X-Admin-Token': token } });
+      if (!r.ok) throw new Error('Eroare la încărcarea comenzilor');
       const data = await r.json();
       orders = data.orders || [];
       showDashboard();
@@ -688,7 +697,7 @@
         </td>
         <td>${esc(o.productLabel)}</td>
         <td class="col-payment">${esc(o.paymentMethod)}</td>
-        <td class="col-total">${o.total} ${o.currency}</td>
+        <td class="col-total">${o.total} ${esc(o.currency)}</td>
         <td><span class="status-badge ${o.status}">${STATUS_LABELS[o.status] || o.status}</span></td>
       </tr>
     `).join('');
@@ -746,10 +755,10 @@
           <dt>Data plasării</dt><dd>${formatDate(o.created_at, true)}</dd>
           <dt>Status</dt><dd><span class="status-badge ${o.status}">${STATUS_LABELS[o.status]}</span></dd>
           <dt>Produs</dt><dd>${esc(o.productLabel)} × ${o.quantity}</dd>
-          <dt>Preț unitar</dt><dd>${o.unitPrice} ${o.currency}</dd>
-          <dt>Livrare</dt><dd>${esc(o.shippingMethod)} — ${o.shippingPrice} ${o.currency}</dd>
+          <dt>Preț unitar</dt><dd>${o.unitPrice} ${esc(o.currency)}</dd>
+          <dt>Livrare</dt><dd>${esc(o.shippingMethod)} — ${o.shippingPrice} ${esc(o.currency)}</dd>
           <dt>Plată</dt><dd>${esc(o.paymentMethod)}</dd>
-          <dt><strong>Total</strong></dt><dd><strong style="font-size:1.1em;color:var(--gold-dark);">${o.total} ${o.currency}</strong></dd>
+          <dt><strong>Total</strong></dt><dd><strong style="font-size:1.1em;color:var(--gold-dark);">${o.total} ${esc(o.currency)}</strong></dd>
         </dl>
       </div>
 
