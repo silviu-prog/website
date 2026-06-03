@@ -1,0 +1,45 @@
+name: Deploy to Cloudflare Pages
+
+# Deploys the site to the "yeshua" Cloudflare Pages project on every push to the
+# development branch. Bindings (D1 "DB", ADMIN_USERNAME/ADMIN_PASSWORD) live on the
+# Pages project itself and are preserved across deployments.
+
+on:
+  push:
+    branches:
+      - claude/laughing-planck-Aousf
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Assemble public assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          mkdir -p dist
+          # _worker.js at the deploy root => Pages Function (advanced mode).
+          cp _worker.js dist/
+          # Public pages.
+          cp *.html dist/
+          # Images (only those that exist).
+          for f in *.png *.jpg *.jpeg *.gif *.webp *.svg *.ico; do
+            cp "$f" dist/
+          done
+          echo "── Files to deploy ──"
+          ls -la dist
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 6d4b96f60e99de96b3ee3006f323bbcd
+          command: pages deploy dist --project-name=yeshua --branch=main
