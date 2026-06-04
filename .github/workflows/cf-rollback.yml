@@ -24,17 +24,20 @@ jobs:
     steps:
       - name: List recent deployments
         run: |
-          set -euo pipefail
+          set -uo pipefail
           curl -s -H "Authorization: Bearer $CF_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$CF_PROJECT/deployments?per_page=30" \
             > deployments.json
+          echo "── API status ──"
+          jq '{success, errors, messages, result_count: (.result | length)}' deployments.json
+          echo ""
           echo "── Deployments (newest first) ──"
-          jq -r '.result[] | "\(.created_on)  env=\(.environment)  id=\(.id)  url=\(.url)"' deployments.json
+          jq -r '.result[]? | "\(.created_on)  env=\(.environment)  id=\(.id)  url=\(.url)"' deployments.json
           echo ""
           echo "── Current production (canonical) deployment ──"
           curl -s -H "Authorization: Bearer $CF_TOKEN" \
             "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$CF_PROJECT" \
-            | jq -r '.result.canonical_deployment | "created=\(.created_on)  id=\(.id)  url=\(.url)"'
+            | jq '{success, errors, canonical: (.result.canonical_deployment | {created_on, id, url})}'
 
       - name: Roll back production
         if: env.ROLLBACK_TO != ''
