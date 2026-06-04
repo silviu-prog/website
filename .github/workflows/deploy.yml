@@ -5,10 +5,8 @@ name: Deploy to Cloudflare Pages
 # Pages project itself and are preserved across deployments.
 
 on:
-  push:
-    branches:
-      - claude/laughing-planck-Aousf
-      - main
+  # Auto-deploy temporarily disabled during pre-order rollback recovery.
+  # Re-enable by restoring the push trigger once site content is settled.
   workflow_dispatch:
 
 jobs:
