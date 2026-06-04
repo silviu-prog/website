@@ -20,7 +20,7 @@ jobs:
       CF_ACCOUNT: 6d4b96f60e99de96b3ee3006f323bbcd
       CF_PROJECT: yeshua
       CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      ROLLBACK_TO: ""   # <- set to a deployment id to perform the rollback
+      ROLLBACK_TO: "28eb3965-b1f2-431c-adbf-76ca0fb83aeb"   # pre-order version (2026-05-28)
     steps:
       - name: List recent deployments
         run: |
