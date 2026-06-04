@@ -1,12 +1,18 @@
 name: Deploy to Cloudflare Pages
 
-# Deploys the site to the "yeshua" Cloudflare Pages project on every push to the
-# development branch. Bindings (D1 "DB", ADMIN_USERNAME/ADMIN_PASSWORD) live on the
-# Pages project itself and are preserved across deployments.
+# Deploys the PRE-ORDER site to the "yeshua" Cloudflare Pages project on every
+# push to the development branch.
+#
+# During the pre-order phase we publish ONLY index.html (a self-contained page
+# that uses MailerLite for sign-ups — no backend needed). The sale version
+# (index-sale.html) and the orders system (checkout.html, admin.html,
+# _worker.js, schema.sql) are kept in the repo for launch but NOT deployed yet.
 
 on:
-  # Auto-deploy temporarily disabled during pre-order rollback recovery.
-  # Re-enable by restoring the push trigger once site content is settled.
+  push:
+    branches:
+      - claude/laughing-planck-Aousf
+      - main
   workflow_dispatch:
 
 jobs:
@@ -18,20 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Assemble public assets
+      - name: Assemble public assets (pre-order)
         shell: bash
         run: |
           set -euo pipefail
-          shopt -s nullglob
           mkdir -p dist
-          # _worker.js at the deploy root => Pages Function (advanced mode).
-          cp _worker.js dist/
-          # Public pages.
-          cp *.html dist/
-          # Images (only those that exist).
-          for f in *.png *.jpg *.jpeg *.gif *.webp *.svg *.ico; do
-            cp "$f" dist/
-          done
+          # Pre-order homepage only (self-contained, images embedded).
+          cp index.html dist/
           echo "── Files to deploy ──"
           ls -la dist
 
