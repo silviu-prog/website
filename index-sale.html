@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YESHUA — Iisus Fără Creștinism | Silviu Rotariu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Base ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold:        #C4922A;
+      --gold-light:  #E8C87A;
+      --gold-dark:   #8B6318;
+      --crimson:     #8B1A1A;
+      --cream:       #F5F0E8;
+      --cream-dark:  #EDE5D5;
+      --parchment:   #FAF7F2;
+      --warm-dark:   #1C1208;
+      --warm-brown:  #3D2B1A;
+      --text-main:   #2C1E0F;
+      --text-muted:  #6B5740;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'EB Garamond', Georgia, serif;
+      background: var(--parchment);
+      color: var(--text-main);
+      line-height: 1.75;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ──────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 18px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.4s, box-shadow 0.4s;
+    }
+    nav.scrolled {
+      background: rgba(28, 18, 8, 0.95);
+      box-shadow: 0 2px 24px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+    }
+    .nav-logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      letter-spacing: 0.12em;
+      text-decoration: none;
+    }
+    .nav-links { display: flex; gap: 32px; list-style: none; }
+    .nav-links a {
+      font-family: 'Cinzel', serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.75);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+
+    /* ── Hero ─────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0D0804 0%, #1C1208 35%, #2A1C0E 65%, #0D0804 100%);
+    }
+
+    /* Radiant light from center-top */
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 900px;
+      height: 900px;
+      background: radial-gradient(ellipse at center, rgba(232,200,122,0.18) 0%, rgba(196,146,42,0.08) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Subtle texture overlay */
+    .hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+      max-width: 1100px;
+      width: 100%;
+      padding: 120px 48px 80px;
+    }
+
+    /* Book cover with glow */
+    .hero-book {
+      display: flex;
+      justify-content: center;
+    }
+    .hero-book img {
+      width: 100%;
+      max-width: 340px;
+      border-radius: 4px 12px 12px 4px;
+      box-shadow:
+        -8px 8px 0 rgba(0,0,0,0.5),
+        0 40px 80px rgba(0,0,0,0.7),
+        0 0 60px rgba(196,146,42,0.25),
+        0 0 120px rgba(196,146,42,0.12);
+      transform: perspective(1000px) rotateY(5deg);
+      transition: transform 0.5s ease, box-shadow 0.5s ease;
+    }
+    .hero-book img:hover {
+      transform: perspective(1000px) rotateY(0deg) scale(1.02);
+      box-shadow:
+        0 0 0 rgba(0,0,0,0.5),
+        0 50px 100px rgba(0,0,0,0.6),
+        0 0 80px rgba(196,146,42,0.35),
+        0 0 160px rgba(196,146,42,0.18);
+    }
+
+    /* Hero text */
+    .hero-text { color: #fff; }
+
+    .hero-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .hero-eyebrow::before,
+    .hero-eyebrow::after {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 40px;
+      background: var(--gold);
+      opacity: 0.6;
+    }
+
+    .hero-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(3.5rem, 6vw, 5.5rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: 0.05em;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 50%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.9rem, 1.8vw, 1.2rem);
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.7);
+      margin-bottom: 8px;
+    }
+    .hero-subtitle span {
+      color: var(--crimson);
+      font-weight: 600;
+    }
+
+    .hero-author {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 36px;
+      text-transform: uppercase;
+    }
+
+    .hero-description {
+      font-size: 1.1rem;
+      line-height: 1.85;
+      color: rgba(255,255,255,0.72);
+      margin-bottom: 44px;
+      max-width: 480px;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+      color: var(--warm-dark);
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      border: none;
+      border-radius: 3px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 24px rgba(196,146,42,0.4);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 36px rgba(196,146,42,0.55);
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 100%);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: transparent;
+      color: rgba(255,255,255,0.8);
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 15px 32px;
+      border: 1px solid rgba(196,146,42,0.45);
+      border-radius: 3px;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .btn-secondary:hover {
+      border-color: var(--gold);
+      color: var(--gold-light);
+      background: rgba(196,146,42,0.08);
+    }
+
+    /* Scroll indicator */
+    .scroll-indicator {
+      position: absolute;
+      bottom: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      opacity: 0.5;
+      animation: scrollBob 2.5s ease-in-out infinite;
+    }
+    .scroll-indicator span {
+      font-family: 'Cinzel', serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .scroll-indicator svg { color: var(--gold); }
+    @keyframes scrollBob {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ── Divider ──────────────────────────────────── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      padding: 0 48px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .divider-line { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); }
+    .divider-icon {
+      font-family: 'Cinzel', serif;
+      color: var(--gold);
+      font-size: 1.2rem;
+    }
+
+    /* ── Section Shared ───────────────────────────── */
+    section { padding: 100px 48px; }
+
+    .section-label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .section-label::after {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 48px;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 700;
+      color: var(--warm-brown);
+      line-height: 1.25;
+      margin-bottom: 24px;
+    }
+
+    /* ── About Book ───────────────────────────────── */
+    #despre-carte {
+      background: var(--cream);
+      border-top: 1px solid rgba(196,146,42,0.2);
+    }
+
+    .about-book-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    .about-text p {
+      font-size: 1.13rem;
+      color: var(--text-main);
+      margin-bottom: 22px;
+      line-height: 1.9;
+    }
+    .about-text p:first-of-type::first-letter {
+      font-family: 'Cinzel', serif;
+      font-size: 3.5em;
+      float: left;
+      line-height: 0.8;
+      margin: 0 12px 0 0;
+      color: var(--gold-dark);
+      font-weight: 700;
+    }
+
+    .highlight-quote {
+      border-left: 3px solid var(--gold);
+      padding: 20px 28px;
+      background: rgba(196,146,42,0.06);
+      border-radius: 0 4px 4px 0;
+      margin: 32px 0;
+    }
+    .highlight-quote p {
+      font-style: italic;
+      font-size: 1.2rem;
+      color: var(--warm-brown);
+      line-height: 1.75;
+      margin: 0 !important;
+    }
+
+    /* Key themes */
+    .themes-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .theme-card {
+      background: var(--parchment);
+      border: 1px solid rgba(196,146,42,0.2);
+      border-radius: 6px;
+      padding: 20px 22px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .theme-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-2px);
+    }
+    .theme-icon {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      display: block;
+    }
+    .theme-card h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      letter-spacing: 0.05em;
+      margin-bottom: 6px;
+    }
+    .theme-card p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin: 0 !important;
+    }
+
+    /* ── Dark quote band ──────────────────────────── */
+    .quote-band {
+      background: linear-gradient(135deg, #0D0804 0%, #1C1208 50%, #0D0804 100%);
+      padding: 90px 48px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .quote-band::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(ellipse, rgba(196,146,42,0.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .quote-band blockquote {
+      position: relative;
+      max-width: 760px;
+      margin: 0 auto;
+    }
+    .quote-mark {
+      font-family: 'Cinzel', serif;
+      font-size: 5rem;
+      line-height: 0.5;
+      color: var(--gold);
+      opacity: 0.3;
+      display: block;
+      margin-bottom: 20px;
+    }
+    .quote-band blockquote p {
+      font-family: 'EB Garamond', serif;
+      font-size: clamp(1.3rem, 2.5vw, 1.75rem);
+      font-style: italic;
+      color: rgba(255,255,255,0.9);
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .quote-band blockquote cite {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      font-style: normal;
+    }
+
+    /* ── Author ───────────────────────────────────── */
+    #autor {
+      background: var(--parchment);
+    }
+    .author-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 72px;
+      align-items: start;
+    }
+    .author-portrait {
+      position: sticky;
+      top: 100px;
+    }
+    .portrait-frame {
+      width: 100%;
+      aspect-ratio: 3/4;
+      background: linear-gradient(135deg, var(--cream-dark), var(--cream));
+      border-radius: 6px;
+      border: 1px solid rgba(196,146,42,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      overflow: hidden;
+      position: relative;
+    }
+    .portrait-placeholder {
+      font-family: 'Cinzel', serif;
+      font-size: 5rem;
+      color: var(--gold);
+      opacity: 0.4;
+    }
+    .portrait-caption {
+      text-align: center;
+      margin-top: 16px;
+    }
+    .portrait-caption strong {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      letter-spacing: 0.08em;
+    }
+    .portrait-caption span {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .author-bio h2 { margin-bottom: 28px; }
+    .author-bio p {
+      font-size: 1.1rem;
+      line-height: 1.9;
+      color: var(--text-main);
+      margin-bottom: 20px;
+    }
+
+    .credentials {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 32px;
+    }
+    .credential {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 20px;
+      background: var(--cream);
+      border-radius: 6px;
+      border: 1px solid rgba(196,146,42,0.15);
+    }
+    .credential-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--gold);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+    .credential p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin: 0 !important;
+      line-height: 1.5 !important;
+    }
+
+    /* ── Testimonials ─────────────────────────────── */
+    #testimoniale {
+      background: var(--cream);
+      border-top: 1px solid rgba(196,146,42,0.15);
+    }
+    .testimonials-header {
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto 64px;
+    }
+    .testimonials-header .section-label { justify-content: center; }
+    .testimonials-header .section-label::after { display: none; }
+    .testimonials-header .section-label::before {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 48px;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+
+    .testimonials-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+    .testimonial-card {
+      background: var(--parchment);
+      border: 1px solid rgba(196,146,42,0.18);
+      border-radius: 8px;
+      padding: 32px 30px;
+      position: relative;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .testimonial-card:hover {
+      box-shadow: 0 12px 48px rgba(0,0,0,0.1);
+      transform: translateY(-4px);
+    }
+    .testimonial-card::before {
+      content: '"';
+      font-family: 'Cinzel', serif;
+      font-size: 4rem;
+      color: var(--gold);
+      opacity: 0.2;
+      position: absolute;
+      top: 12px;
+      left: 20px;
+      line-height: 1;
+    }
+    .testimonial-stars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .star { color: var(--gold); font-size: 0.9rem; }
+    .testimonial-text {
+      font-style: italic;
+      font-size: 1.02rem;
+      color: var(--text-main);
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+    .testimonial-author {
+      border-top: 1px solid rgba(196,146,42,0.15);
+      padding-top: 16px;
+    }
+    .testimonial-author strong {
+      display: block;
+      font-family: 'Cinzel', serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+    .testimonial-author span {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ── CTA / Order ──────────────────────────────── */
+    #comanda {
+      background: linear-gradient(160deg, #0D0804 0%, #1C1208 40%, #2A1C0E 70%, #0D0804 100%);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    #comanda::before {
+      content: '';
+      position: absolute;
+      top: -20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(ellipse, rgba(196,146,42,0.15) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .cta-inner {
+      position: relative;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .cta-inner .section-label { justify-content: center; color: var(--gold-light); }
+    .cta-inner .section-label::after { display: none; }
+    .cta-inner .section-label::before {
+      content: '';
+      display: block;
+      height: 1px;
+      width: 48px;
+      background: var(--gold);
+      opacity: 0.5;
+    }
+    .cta-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 700;
+      color: var(--gold-light);
+      margin-bottom: 20px;
+      line-height: 1.2;
+    }
+    .cta-text {
+      font-size: 1.1rem;
+      color: rgba(255,255,255,0.68);
+      line-height: 1.8;
+      margin-bottom: 48px;
+    }
+    .cta-options {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    .cta-options .btn-primary { padding: 18px 48px; font-size: 0.88rem; }
+    .cta-options .btn-secondary { padding: 17px 40px; font-size: 0.88rem; }
+
+    .cta-note {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.35);
+      font-style: italic;
+    }
+
+    /* Price badge */
+    .price-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(196,146,42,0.12);
+      border: 1px solid rgba(196,146,42,0.3);
+      border-radius: 100px;
+      padding: 8px 24px;
+      margin-bottom: 40px;
+    }
+    .price-badge span:first-child {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: rgba(255,255,255,0.5);
+      text-transform: uppercase;
+    }
+    .price-badge .price {
+      font-family: 'Cinzel', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+
+    /* ── Footer ───────────────────────────────────── */
+    footer {
+      background: #080502;
+      padding: 56px 48px 40px;
+      border-top: 1px solid rgba(196,146,42,0.15);
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+      gap: 60px;
+      margin-bottom: 48px;
+    }
+    .footer-brand .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .footer-brand .subtitle {
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .footer-brand p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.4);
+      line-height: 1.7;
+    }
+    .footer-col h5 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.4);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-col ul li a:hover { color: var(--gold-light); }
+
+    .footer-bottom {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: 32px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-bottom p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* ── Responsive ───────────────────────────────── */
+    @media (max-width: 900px) {
+      nav { padding: 16px 24px; }
+      .nav-links { display: none; }
+      section { padding: 72px 24px; }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 48px;
+        padding: 100px 24px 64px;
+        text-align: center;
+      }
+      .hero-book { order: -1; }
+      .hero-book img { max-width: 240px; }
+      .hero-description { margin-left: auto; margin-right: auto; }
+      .hero-eyebrow, .hero-cta { justify-content: center; }
+
+      .about-book-inner { grid-template-columns: 1fr; gap: 48px; }
+      .themes-grid { grid-template-columns: 1fr; }
+      .author-inner { grid-template-columns: 1fr; gap: 40px; }
+      .author-portrait { position: static; max-width: 240px; margin: 0 auto; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; gap: 36px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+      .hero-title { font-size: 3rem; }
+      .hero-cta { flex-direction: column; align-items: center; }
+      .cta-options { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ────────────────────────────────────── -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">YESHUA</a>
+  <ul class="nav-links">
+    <li><a href="#despre-carte">Despre carte</a></li>
+    <li><a href="#autor">Autor</a></li>
+    <li><a href="#testimoniale">Recenzii</a></li>
+    <li><a href="#comanda">Comandă</a></li>
+  </ul>
+</nav>
+
+<!-- ── Hero ──────────────────────────────────────────── -->
+<section class="hero" id="acasa">
+  <div class="hero-inner">
+    <div class="hero-book">
+      <img src="unnamed.jpg" alt="Coperta cărții YESHUA — Iisus Fără Creștinism de Silviu Rotariu" />
+    </div>
+    <div class="hero-text">
+      <div class="hero-eyebrow">Silviu Rotariu</div>
+      <h1 class="hero-title">YESHUA</h1>
+      <p class="hero-subtitle">Iisus <span>Fără</span> Creștinism</p>
+      <p class="hero-author">— O carte care schimbă perspectiva —</p>
+      <p class="hero-description">
+        O călătorie îndrăzneață dincolo de dogme și tradiții religioase, în căutarea
+        omului real din spatele celui mai influent nume din istorie. Cine a fost, cu
+        adevărat, Yeshua din Nazaret?
+      </p>
+      <div class="hero-cta">
+        <a href="/checkout?product=fizica" class="btn-primary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+          Comandă Acum
+        </a>
+        <a href="#despre-carte" class="btn-secondary">
+          Descoperă Cartea
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+      <path fill-rule="evenodd" d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ── Despre Carte ───────────────────────────────────── -->
+<section id="despre-carte">
+  <div class="about-book-inner">
+    <div class="about-text">
+      <div class="section-label">Despre carte</div>
+      <h2 class="section-title">O voce care îndrăznește să pună întrebările cu adevărat importante</h2>
+
+      <p>
+        Există o diferență uriașă între Iisus — personajul construit de secole de teologie, concilii și interese politice — și Yeshua, omul care a trăit, a vorbit și a murit în Palestina secolului I. Această carte pornește tocmai de la această diferență.
+      </p>
+      <p>
+        Silviu Rotariu nu scrie o carte împotriva credinței. Scrie o carte <em>pentru</em> ea — pentru o credință autentică, eliberată de straturile de interpretare care adesea ascund mai mult decât revelează. Prin cercetare riguroasă și limbaj accesibil, autorul reconstituie figura istorică a lui Yeshua din sursele primare, în contextul iudaismului de epocă.
+      </p>
+
+      <div class="highlight-quote">
+        <p>„Nu trebuie să alegi între știință și credință. Trebuie să ai curajul să le privești pe amândouă cu aceeași onestitate."</p>
+      </div>
+
+      <p>
+        Cartea nu oferă răspunsuri definitive — oferă ceva mai valoros: uneltele pentru a-ți pune propriile întrebări.
+      </p>
+    </div>
+
+    <div>
+      <div class="section-label" style="margin-bottom:24px">Teme principale</div>
+      <div class="themes-grid">
+        <div class="theme-card">
+          <span class="theme-icon">✦</span>
+          <h4>Yeshua Istoric</h4>
+          <p>Cine a fost cu adevărat omul din Nazaret, dincolo de teologia ulterioară.</p>
+        </div>
+        <div class="theme-card">
+          <span class="theme-icon">✦</span>
+          <h4>Iudaismul Secolului I</h4>
+          <p>Contextul cultural și religios care l-a format și care explică mesajul său.</p>
+        </div>
+        <div class="theme-card">
+          <span class="theme-icon">✦</span>
+          <h4>Transformarea Mesajului</h4>
+          <p>Cum a evoluat creștinismul departe de rădăcinile sale evreiești originare.</p>
+        </div>
+        <div class="theme-card">
+          <span class="theme-icon">✦</span>
+          <h4>Relevanța Astăzi</h4>
+          <p>Ce înseamnă figura lui Yeshua pentru omul contemporan care caută sens.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Quote Band ─────────────────────────────────────── -->
+<div class="quote-band">
+  <blockquote>
+    <span class="quote-mark">"</span>
+    <p>Nu m-am temut de întrebări. M-am temut de o viață trăită fără să le pun. Această carte este acel curaj scris pe hârtie.</p>
+    <cite>— Silviu Rotariu</cite>
+  </blockquote>
+</div>
+
+<!-- ── Autor ──────────────────────────────────────────── -->
+<section id="autor">
+  <div class="author-inner">
+    <div class="author-portrait">
+      <div class="portrait-frame">
+        <span class="portrait-placeholder">S·R</span>
+      </div>
+      <div class="portrait-caption">
+        <strong>Silviu Rotariu</strong>
+        <span>Scriitor & Cercetător</span>
+      </div>
+    </div>
+
+    <div class="author-bio">
+      <div class="section-label">Despre autor</div>
+      <h2 class="section-title">Silviu Rotariu</h2>
+      <p>
+        Silviu Rotariu este scriitor și cercetător independent, cu o pasiune profundă pentru istoria religiilor, filosofia existențială și critica textelor sacre. De-a lungul a peste un deceniu de studiu și reflecție, a explorat intersecția dintre credință, știință și tradiție.
+      </p>
+      <p>
+        Cărțile sale nu sunt scrieri academice reci — sunt invitații calde la dialog, adresate deopotrivă credincioșilor în căutare de sens, agnosticilor curioși și tuturor celor care refuză răspunsurile prea ușoare.
+      </p>
+      <p>
+        <em>YESHUA: Iisus Fără Creștinism</em> reprezintă culminarea a ani de cercetare în izvoarele primare, texte apocrife, scholarship biblic contemporan și gândire teologică comparativă.
+      </p>
+
+      <div class="credentials">
+        <div class="credential">
+          <div class="credential-dot"></div>
+          <p>Cercetare de peste 10 ani în istoria creștinismului timpuriu și iudaismul secolului I</p>
+        </div>
+        <div class="credential">
+          <div class="credential-dot"></div>
+          <p>Colaborări cu teologi și istorici din România și din diasporă</p>
+        </div>
+        <div class="credential">
+          <div class="credential-dot"></div>
+          <p>Conferențiar la întâlniri dedicate spiritualității autentice și dialogului interreligios</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Testimoniale ───────────────────────────────────── -->
+<section id="testimoniale">
+  <div class="testimonials-header">
+    <div class="section-label">Cititorii spun</div>
+    <h2 class="section-title">Ce spun cei care au citit cartea</h2>
+  </div>
+
+  <div class="testimonials-grid">
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-text">„Am citit cartea dintr-o răsuflare. Silviu reușește ceea ce puțini îndrăznesc — să vorbească despre Hristos cu dragoste și cu curaj intelectual în egală măsură. Nu m-a scuturat din credință, ci mi-a adâncit-o."</p>
+      <div class="testimonial-author">
+        <strong>Maria C.</strong>
+        <span>Cluj-Napoca, profesor de teologie</span>
+      </div>
+    </div>
+
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-text">„Am evitat mult timp cărțile despre Iisus, temându-mă că vor fi fie propagandă religioasă, fie atacuri ateiste. Aceasta nu e nici una, nici alta. E pur și simplu onestă — și asta e mai valoroasă decât orice."</p>
+      <div class="testimonial-author">
+        <strong>Andrei M.</strong>
+        <span>București, filosof independent</span>
+      </div>
+    </div>
+
+    <div class="testimonial-card">
+      <div class="testimonial-stars">
+        <span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span><span class="star">★</span>
+      </div>
+      <p class="testimonial-text">„Un gest de curaj rar în cultura noastră. Rotariu scrie cu erudiție, dar fără aroganță — fiecare pagină simți că e scrisă de cineva care chiar iubește subiectul și respectă cititorul."</p>
+      <div class="testimonial-author">
+        <strong>Elena P.</strong>
+        <span>Iași, cercetător în studii biblice</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── CTA / Comandă ──────────────────────────────────── -->
+<section id="comanda">
+  <div class="cta-inner">
+    <div class="section-label">Obține cartea</div>
+    <h2 class="cta-title">Începe propria ta călătorie spre Yeshua</h2>
+    <p class="cta-text">
+      Disponibilă în format fizic și digital. Livrare în toată România și în diaspora românească. Comandă astăzi și primește un semn de carte exclusiv, dedicat cărții.
+    </p>
+    <div class="price-badge">
+      <span>Preț</span>
+      <span class="price">45 RON</span>
+      <span>· livrare gratuită</span>
+    </div>
+    <div class="cta-options">
+      <a href="/checkout?product=fizica" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+        Comandă Carte Fizică
+      </a>
+      <a href="/checkout?product=digitala" class="btn-secondary">
+        Versiune PDF / eBook
+      </a>
+    </div>
+    <p class="cta-note">Plată securizată · Ramburs sau card · Livrare 2–5 zile lucrătoare</p>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="logo">YESHUA</span>
+      <div class="subtitle">Iisus Fără Creștinism</div>
+      <p>O carte despre curajul de a întreba și despre dragostea care nu se teme de răspunsuri.</p>
+    </div>
+
+    <div class="footer-col">
+      <h5>Navigare</h5>
+      <ul>
+        <li><a href="#acasa">Acasă</a></li>
+        <li><a href="#despre-carte">Despre carte</a></li>
+        <li><a href="#autor">Autor</a></li>
+        <li><a href="#testimoniale">Recenzii</a></li>
+        <li><a href="#comanda">Comandă</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h5>Contact</h5>
+      <ul>
+        <li><a href="mailto:contact@silviurotariu.ro">contact@silviurotariu.ro</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+        <li><a href="#">YouTube</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 Silviu Rotariu. Toate drepturile rezervate.</p>
+    <p>Construit cu pasiune pentru cuvânt și adevăr.</p>
+  </div>
+</footer>
+
+<!-- ── Scripts ────────────────────────────────────────── -->
+<script>
+  // Navbar scroll effect
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  });
+</script>
+
+</body>
+</html>
