@@ -26,7 +26,7 @@ jobs:
         run: |
           set -uo pipefail
           curl -s -H "Authorization: Bearer $CF_TOKEN" \
-            "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$CF_PROJECT/deployments?per_page=30" \
+            "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/$CF_PROJECT/deployments?per_page=25" \
             > deployments.json
           echo "── API status ──"
           jq '{success, errors, messages, result_count: (.result | length)}' deployments.json
