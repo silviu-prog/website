@@ -17,3 +17,6 @@ zip/
 # Cruft OS
 .DS_Store
 Thumbs.db
+
+# Wrangler local cache
+.wrangler/
