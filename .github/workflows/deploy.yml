@@ -1,0 +1,29 @@
+name: Deploy pe Cloudflare Pages
+
+# Publică automat site-ul yeshuabook.com la fiecare modificare pe `main`.
+# Poate fi pornit și manual din tab-ul Actions (butonul "Run workflow").
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout cod
+        uses: actions/checkout@v4
+
+      - name: Pregătește fișierele publice
+        # Eliminăm din copia temporară fișierele care nu trebuie publicate
+        # (documentație, schema bazei de date, scripturi locale, preview).
+        run: |
+          rm -f *.md schema.sql serve.ps1 deploy.ps1 index_preview_light.html
+          rm -rf migrations .github .claude
+
+      - name: Deploy pe Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy . --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }} --branch=main
