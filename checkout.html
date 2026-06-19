@@ -295,6 +295,56 @@
     line-height: 1.55;
   }
 
+  /* Easybox locker picker */
+  .locker-results {
+    display: none;
+    margin-top: 6px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    max-height: 280px;
+    overflow-y: auto;
+    background: #fff;
+  }
+  .locker-results.visible { display: block; }
+  .locker-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(196,146,42,0.12);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .locker-item:last-child { border-bottom: none; }
+  .locker-item:hover { background: rgba(196,146,42,0.07); }
+  .locker-item .lname { font-weight: 600; color: var(--warm-brown); }
+  .locker-item .laddr { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+  .locker-empty { padding: 14px 16px; color: var(--text-muted); font-style: italic; font-size: 0.9rem; }
+  .locker-selected {
+    margin-top: 12px;
+    border: 2px solid var(--gold);
+    background: rgba(196,146,42,0.06);
+    border-radius: 6px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+  .locker-selected .lname { font-weight: 700; color: var(--warm-brown); }
+  .locker-selected .laddr { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; }
+  .locker-selected .change-btn {
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-dark);
+    font-family: 'Cinzel', serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .change-btn:hover { background: rgba(196,146,42,0.1); }
+
   /* Order summary */
   .summary {
     position: sticky;
@@ -436,21 +486,14 @@
     <div>
       <!-- Step 1: Product -->
       <section class="form-section">
-        <h2 class="section-heading"><span class="num">1</span> Alege formatul</h2>
-        <div class="product-options">
-          <label class="product-card selected" data-product="fizica" data-price="45">
+        <h2 class="section-heading"><span class="num">1</span> Cartea</h2>
+        <div class="product-options" style="grid-template-columns:1fr;">
+          <label class="product-card selected" data-product="fizica" data-price="55">
             <input type="radio" name="product" value="fizica" checked />
             <span class="badge">Tipărit</span>
             <h3>Carte fizică</h3>
-            <p class="desc">Format tipărit, copertă mată, ~280 pagini. Livrare prin curier.</p>
-            <div class="price">45<small>RON</small></div>
-          </label>
-          <label class="product-card" data-product="digitala" data-price="25">
-            <input type="radio" name="product" value="digitala" />
-            <span class="badge">PDF + EPUB</span>
-            <h3>Carte digitală</h3>
-            <p class="desc">Format PDF și EPUB. Acces imediat pe email după confirmarea plății.</p>
-            <div class="price">25<small>RON</small></div>
+            <p class="desc">Format tipărit, copertă mată, ~280 pagini. Livrare prin Sameday Easybox.</p>
+            <div class="price">55<small>RON</small></div>
           </label>
         </div>
       </section>
@@ -470,79 +513,45 @@
           <div class="field full">
             <label>Email <span class="req">*</span></label>
             <input type="email" name="customerEmail" required autocomplete="email" />
-            <p class="hint">Aici primești confirmarea comenzii și (pentru cartea digitală) link-ul de descărcare.</p>
+            <p class="hint">Aici primești confirmarea comenzii și detaliile de livrare.</p>
           </div>
         </div>
       </section>
 
-      <!-- Step 3: Shipping (only for physical) -->
+      <!-- Step 3: Easybox locker (only for physical) -->
       <section class="form-section" id="shippingSection">
-        <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
-
+        <h2 class="section-heading"><span class="num">3</span> Alege Easybox-ul</h2>
+        <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
+          Livrăm prin <strong>Sameday Easybox</strong> (transport 15 lei), doar pe teritoriul României. Caută după oraș sau adresă și alege locker-ul de unde îți ridici coletul.
+        </p>
+        <input type="hidden" name="lockerId" id="lockerId" />
         <div class="field">
-          <label>Țara <span class="req">*</span></label>
-          <select name="shippingCountry" id="countrySelect" required>
-            <option value="RO" selected>România</option>
-            <optgroup label="Uniunea Europeană">
-              <option value="AT">Austria</option>
-              <option value="BE">Belgia</option>
-              <option value="BG">Bulgaria</option>
-              <option value="HR">Croația</option>
-              <option value="CY">Cipru</option>
-              <option value="CZ">Cehia</option>
-              <option value="DK">Danemarca</option>
-              <option value="EE">Estonia</option>
-              <option value="FI">Finlanda</option>
-              <option value="FR">Franța</option>
-              <option value="DE">Germania</option>
-              <option value="GR">Grecia</option>
-              <option value="HU">Ungaria</option>
-              <option value="IE">Irlanda</option>
-              <option value="IT">Italia</option>
-              <option value="LV">Letonia</option>
-              <option value="LT">Lituania</option>
-              <option value="LU">Luxemburg</option>
-              <option value="MT">Malta</option>
-              <option value="NL">Olanda</option>
-              <option value="PL">Polonia</option>
-              <option value="PT">Portugalia</option>
-              <option value="SK">Slovacia</option>
-              <option value="SI">Slovenia</option>
-              <option value="ES">Spania</option>
-              <option value="SE">Suedia</option>
-            </optgroup>
-          </select>
+          <label>Caută Easybox <span class="req">*</span></label>
+          <input type="text" id="lockerSearch" placeholder="Ex: Cluj, Iulius Mall, Bd. Unirii..." autocomplete="off" />
+          <p class="hint" id="lockerHint">Se încarcă lista de lockere...</p>
         </div>
-
-        <div class="field-grid">
-          <div class="field full">
-            <label>Stradă, număr, bloc, apartament <span class="req">*</span></label>
-            <input type="text" name="shippingAddress" autocomplete="street-address" />
-          </div>
-          <div class="field">
-            <label>Localitate <span class="req">*</span></label>
-            <input type="text" name="shippingCity" autocomplete="address-level2" />
-          </div>
-          <div class="field">
-            <label>Cod poștal <span class="req">*</span></label>
-            <input type="text" name="shippingPostal" autocomplete="postal-code" />
-          </div>
-          <div class="field full">
-            <label>Județ / Regiune</label>
-            <input type="text" name="shippingRegion" autocomplete="address-level1" />
-          </div>
-        </div>
+        <div id="lockerResults" class="locker-results"></div>
+        <div id="lockerSelected" class="locker-selected" style="display:none;"></div>
       </section>
 
       <!-- Step 4: Payment -->
       <section class="form-section">
         <h2 class="section-heading"><span class="num">4</span> Metoda de plată</h2>
-        <div class="payment-info" id="paymentInfo">
-          <div class="icon">💰</div>
-          <div>
-            <strong id="paymentTitle">Ramburs la livrare</strong>
-            <p id="paymentDesc">Plătești în numerar curierului, la primirea coletului. Disponibil în toată România.</p>
-          </div>
+        <div class="shipping-options" id="paymentOptions">
+          <label class="shipping-card selected" data-pay="card">
+            <input type="radio" name="paymentMethod" value="card" checked />
+            <div>
+              <div class="label">💳 Card online (Stripe)</div>
+              <div class="sublabel">Plată securizată cu cardul. Vei fi redirecționat către Stripe.</div>
+            </div>
+          </label>
+          <label class="shipping-card" data-pay="cod" id="codOption">
+            <input type="radio" name="paymentMethod" value="cod" />
+            <div>
+              <div class="label">💰 Ramburs la livrare</div>
+              <div class="sublabel">Plătești cash la ridicarea coletului din Easybox.</div>
+            </div>
+          </label>
         </div>
       </section>
 
@@ -564,7 +573,7 @@
 
         <div class="summary-line">
           <span class="label" id="sumProduct">Carte fizică × 1</span>
-          <span class="value" id="sumProductPrice">45 RON</span>
+          <span class="value" id="sumProductPrice">55 RON</span>
         </div>
         <div class="summary-line">
           <span class="label">Livrare</span>
@@ -576,74 +585,54 @@
           <span><span class="value" id="sumTotal">60</span><span class="currency" id="sumCurrency">RON</span></span>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn">Trimite comanda</button>
-        <p class="summary-note">Vei primi un email de confirmare cu detaliile comenzii. Nu este nevoie de cont sau de plată online.</p>
+        <button type="submit" class="btn-submit" id="submitBtn">Finalizează comanda</button>
+        <p class="summary-note">Plata cu cardul este procesată securizat prin Stripe. Livrarea coletului se face prin Sameday Easybox. Vei primi un email de confirmare.</p>
       </div>
     </aside>
   </main>
 </form>
 
 <script>
-  // ── Pricing logic ─────────────────────────────────────────────
+  // ── Prețuri (informativ; valorile finale sunt calculate de server) ──
   const PRICES = {
-    fizica:    { value: 45, label: 'Carte fizică' },
-    digitala:  { value: 25, label: 'Carte digitală' }
+    fizica:    { value: 55, label: 'Carte fizică' }
   };
-  const SHIPPING = {
-    RO_FIZICA:    { value: 15, label: 'Curier România' },
-    EU_FIZICA:    { value: 45, label: 'Curier UE' },
-    DIGITALA:     { value: 0,  label: 'Livrare prin email' }
-  };
+  const SHIPPING_EASYBOX = 15;
 
   const form = document.getElementById('checkoutForm');
   const productCards = document.querySelectorAll('.product-card');
   const shippingSection = document.getElementById('shippingSection');
-  const countrySelect = document.getElementById('countrySelect');
-  const paymentTitle = document.getElementById('paymentTitle');
-  const paymentDesc = document.getElementById('paymentDesc');
+  const codOption = document.getElementById('codOption');
+  const paymentOptions = document.getElementById('paymentOptions');
 
   function getSelectedProduct() {
     const checked = document.querySelector('input[name="product"]:checked');
     return checked ? checked.value : 'fizica';
   }
-  function getShippingPrice() {
-    const product = getSelectedProduct();
-    if (product === 'digitala') return SHIPPING.DIGITALA;
-    const country = countrySelect.value;
-    return country === 'RO' ? SHIPPING.RO_FIZICA : SHIPPING.EU_FIZICA;
+  function getPaymentMethod() {
+    const checked = document.querySelector('input[name="paymentMethod"]:checked');
+    return checked ? checked.value : 'card';
   }
   function updateSummary() {
     const product = getSelectedProduct();
     const productData = PRICES[product];
-    const shipping = getShippingPrice();
-    const total = productData.value + shipping.value;
+    const isPhysical = product === 'fizica';
+    const shippingVal = isPhysical ? SHIPPING_EASYBOX : 0;
+    const total = productData.value + shippingVal;
 
     document.getElementById('sumProduct').textContent = productData.label + ' × 1';
     document.getElementById('sumProductPrice').textContent = productData.value + ' RON';
-    document.getElementById('sumShipping').textContent = shipping.value === 0 ? 'Gratuit (email)' : shipping.value + ' RON';
+    document.getElementById('sumShipping').textContent = !isPhysical ? 'Gratuit (email)' : (shippingVal === 0 ? 'Gratuit' : shippingVal + ' RON');
     document.getElementById('sumTotal').textContent = total;
-    document.getElementById('sumCurrency').textContent = 'RON';
 
-    // Toggle shipping section visibility
-    if (product === 'digitala') {
-      shippingSection.style.display = 'none';
-      shippingSection.querySelectorAll('[required]').forEach(el => el.dataset.wasRequired = '1' && el.removeAttribute('required'));
-      paymentTitle.textContent = 'Transfer bancar';
-      paymentDesc.textContent = 'După plasarea comenzii, primești pe email datele bancare pentru transfer. Cartea (PDF + EPUB) îți este trimisă imediat ce plata este confirmată.';
-    } else {
+    if (isPhysical) {
       shippingSection.style.display = 'block';
-      shippingSection.querySelectorAll('input, select').forEach(el => {
-        if (el.dataset.wasRequired === '1' || ['shippingAddress','shippingCity','shippingPostal','shippingCountry'].includes(el.name)) {
-          el.setAttribute('required', '');
-        }
-      });
-      if (countrySelect.value === 'RO') {
-        paymentTitle.textContent = 'Ramburs la livrare';
-        paymentDesc.textContent = 'Plătești în numerar curierului, la primirea coletului. Disponibil în toată România.';
-      } else {
-        paymentTitle.textContent = 'Transfer bancar';
-        paymentDesc.textContent = 'Pentru comenzi în UE, plata se face prin transfer bancar înainte de expediere. Detaliile bancare îți sunt trimise pe email.';
-      }
+      codOption.style.display = 'flex';
+    } else {
+      // Digital: fără livrare, doar plată cu cardul.
+      shippingSection.style.display = 'none';
+      codOption.style.display = 'none';
+      selectPayment('card');
     }
   }
 
@@ -655,9 +644,20 @@
       updateSummary();
     });
   });
-  countrySelect.addEventListener('change', updateSummary);
 
-  // Preselect product based on ?product= URL param (e.g. /checkout?product=digitala)
+  // ── Payment selector ──────────────────────────────────────────
+  function selectPayment(value) {
+    paymentOptions.querySelectorAll('.shipping-card').forEach(c => {
+      const on = c.dataset.pay === value;
+      c.classList.toggle('selected', on);
+      c.querySelector('input').checked = on;
+    });
+  }
+  paymentOptions.querySelectorAll('.shipping-card').forEach(card => {
+    card.addEventListener('click', () => selectPayment(card.dataset.pay));
+  });
+
+  // ── Preselect product din ?product= ───────────────────────────
   const urlProduct = new URLSearchParams(location.search).get('product');
   if (urlProduct && PRICES[urlProduct]) {
     productCards.forEach(c => c.classList.remove('selected'));
@@ -667,46 +667,120 @@
       target.querySelector('input').checked = true;
     }
   }
-
   updateSummary();
+
+  // ── Easybox locker picker ─────────────────────────────────────
+  let lockers = [];
+  let selectedLocker = null;
+  const lockerSearch = document.getElementById('lockerSearch');
+  const lockerResults = document.getElementById('lockerResults');
+  const lockerSelectedEl = document.getElementById('lockerSelected');
+  const lockerHint = document.getElementById('lockerHint');
+  const lockerIdInput = document.getElementById('lockerId');
+
+  fetch('/api/lockers')
+    .then(r => r.json())
+    .then(data => {
+      lockers = (data && data.lockers) || [];
+      lockerHint.textContent = lockers.length
+        ? lockers.length + ' lockere Easybox disponibile. Scrie pentru a căuta.'
+        : 'Lista de lockere nu a putut fi încărcată. Încearcă mai târziu sau alege ramburs.';
+    })
+    .catch(() => { lockerHint.textContent = 'Eroare la încărcarea lockerelor.'; });
+
+  function renderLockers(term) {
+    const q = term.trim().toLowerCase();
+    if (q.length < 2) { lockerResults.classList.remove('visible'); return; }
+    const matches = lockers.filter(l =>
+      (l.name + ' ' + l.city + ' ' + l.county + ' ' + l.address).toLowerCase().includes(q)
+    ).slice(0, 40);
+
+    if (matches.length === 0) {
+      lockerResults.innerHTML = '<div class="locker-empty">Niciun Easybox găsit pentru „' + esc(term) + '".</div>';
+    } else {
+      lockerResults.innerHTML = matches.map(l =>
+        '<div class="locker-item" data-id="' + esc(String(l.id)) + '">' +
+          '<div class="lname">' + esc(l.name) + '</div>' +
+          '<div class="laddr">' + esc([l.address, l.city, l.county].filter(Boolean).join(', ')) + '</div>' +
+        '</div>'
+      ).join('');
+      lockerResults.querySelectorAll('.locker-item').forEach(it => {
+        it.addEventListener('click', () => chooseLocker(it.dataset.id));
+      });
+    }
+    lockerResults.classList.add('visible');
+  }
+
+  function chooseLocker(id) {
+    const l = lockers.find(x => String(x.id) === String(id));
+    if (!l) return;
+    selectedLocker = l;
+    lockerIdInput.value = l.id;
+    lockerResults.classList.remove('visible');
+    lockerSearch.value = '';
+    lockerSelectedEl.style.display = 'flex';
+    lockerSelectedEl.innerHTML =
+      '<div><div class="lname">📦 ' + esc(l.name) + '</div>' +
+      '<div class="laddr">' + esc([l.address, l.city, l.county].filter(Boolean).join(', ')) + '</div></div>' +
+      '<button type="button" class="change-btn">Schimbă</button>';
+    lockerSelectedEl.querySelector('.change-btn').addEventListener('click', () => {
+      selectedLocker = null;
+      lockerIdInput.value = '';
+      lockerSelectedEl.style.display = 'none';
+      lockerSearch.focus();
+    });
+  }
+
+  lockerSearch.addEventListener('input', e => renderLockers(e.target.value));
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
 
   // ── Submit handler ────────────────────────────────────────────
   const errorBox = document.getElementById('errorBox');
   const submitBtn = document.getElementById('submitBtn');
 
+  // Mesaj dacă plata cu cardul a fost anulată.
+  if (new URLSearchParams(location.search).get('canceled')) {
+    errorBox.textContent = 'Plata a fost anulată. Poți încerca din nou.';
+    errorBox.classList.add('visible');
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorBox.classList.remove('visible');
+
+    const product = getSelectedProduct();
+    const isPhysical = product === 'fizica';
+
+    if (isPhysical && !selectedLocker) {
+      errorBox.textContent = 'Te rugăm să alegi un Easybox pentru livrare.';
+      errorBox.classList.add('visible');
+      shippingSection.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Se trimite...';
+    submitBtn.textContent = 'Se procesează...';
 
     const fd = new FormData(form);
-    const product = fd.get('product');
-    const productData = PRICES[product];
-    const shipping = getShippingPrice();
-    const total = productData.value + shipping.value;
-
     const payload = {
       product: product,
-      productLabel: productData.label,
-      unitPrice: productData.value,
-      quantity: 1,
-      shippingMethod: shipping.label,
-      shippingPrice: shipping.value,
-      total: total,
-      currency: 'RON',
-      paymentMethod: paymentTitle.textContent,
+      paymentMethod: getPaymentMethod(),
       customer: {
         name:  fd.get('customerName'),
         email: fd.get('customerEmail'),
         phone: fd.get('customerPhone')
       },
-      shipping: product === 'fizica' ? {
-        country: fd.get('shippingCountry'),
-        address: fd.get('shippingAddress'),
-        city:    fd.get('shippingCity'),
-        postal:  fd.get('shippingPostal'),
-        region:  fd.get('shippingRegion') || ''
+      locker: isPhysical && selectedLocker ? {
+        id: selectedLocker.id,
+        name: selectedLocker.name,
+        city: selectedLocker.city,
+        county: selectedLocker.county,
+        address: selectedLocker.address,
+        postalCode: selectedLocker.postalCode
       } : null,
       notes: fd.get('notes') || ''
     };
@@ -721,8 +795,8 @@
       if (!resp.ok || !data.success) {
         throw new Error(data.error || 'Eroare la trimiterea comenzii');
       }
-      // Redirect to thank-you page
-      window.location.href = '/thank-you?id=' + encodeURIComponent(data.orderId);
+      // Card → redirect către Stripe; ramburs → pagina de mulțumire.
+      window.location.href = data.redirectUrl || ('/thank-you?id=' + encodeURIComponent(data.orderId));
     } catch (err) {
       errorBox.textContent = err.message || 'A apărut o eroare. Te rugăm încearcă din nou sau contactează-ne.';
       errorBox.classList.add('visible');

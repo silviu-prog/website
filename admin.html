@@ -317,6 +317,24 @@
   .status-badge.delivered { background: rgba(74,124,63,0.15); color: var(--status-delivered); }
   .status-badge.cancelled { background: rgba(120,120,120,0.15); color: var(--status-cancelled); text-decoration: line-through; }
 
+  /* Payment badge */
+  .pay-badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 10px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-left: 6px;
+    vertical-align: middle;
+  }
+  .pay-badge.paid    { background: rgba(74,124,63,0.15);  color: var(--status-delivered); }
+  .pay-badge.pending { background: rgba(201,150,60,0.15);  color: var(--status-confirmed); }
+  .pay-badge.cod     { background: rgba(74,124,157,0.12);  color: var(--status-shipped); }
+  .pay-badge.failed  { background: rgba(196,65,65,0.12);   color: var(--status-new); }
+
   /* Empty state */
   .empty-state {
     text-align: center;
@@ -545,6 +563,12 @@
     cancelled: 'Anulată'
   };
   const STATUS_ORDER = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
+  const PAYMENT_LABELS = {
+    paid:    'Plătit ✓',
+    pending: 'În așteptare',
+    cod:     'Ramburs',
+    failed:  'Eșuat'
+  };
 
   // ── Login ────────────────────────────────────────────────────
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
@@ -661,7 +685,8 @@
     if (searchTerm) {
       filtered = filtered.filter(o => {
         const haystack = [
-          o.id, o.customerName, o.customerEmail, o.customerPhone, o.notes
+          o.id, o.customerName, o.customerEmail, o.customerPhone, o.notes,
+          o.awbNumber, o.locker_name
         ].filter(Boolean).join(' ').toLowerCase();
         return haystack.includes(searchTerm);
       });
@@ -748,10 +773,22 @@
           <dt>Produs</dt><dd>${esc(o.productLabel)} × ${o.quantity}</dd>
           <dt>Preț unitar</dt><dd>${o.unitPrice} ${o.currency}</dd>
           <dt>Livrare</dt><dd>${esc(o.shippingMethod)} — ${o.shippingPrice} ${o.currency}</dd>
-          <dt>Plată</dt><dd>${esc(o.paymentMethod)}</dd>
+          <dt>Plată</dt><dd>${esc(o.paymentMethod)} <span class="pay-badge ${o.paymentStatus}">${PAYMENT_LABELS[o.paymentStatus] || o.paymentStatus || '—'}</span></dd>
           <dt><strong>Total</strong></dt><dd><strong style="font-size:1.1em;color:var(--gold-dark);">${o.total} ${o.currency}</strong></dd>
         </dl>
       </div>
+
+      ${o.product === 'fizica' ? `
+      <div class="detail-section">
+        <h4>Livrare Easybox / AWB Sameday</h4>
+        <dl class="detail-grid">
+          <dt>Easybox</dt><dd>${esc(o.locker_name || o.locker_id || '—')}</dd>
+          <dt>AWB</dt><dd class="mono">${o.awbNumber ? esc(o.awbNumber) : '<span style="color:var(--text-muted)">negenerat</span>'}</dd>
+          ${o.awbCost != null ? `<dt>Cost AWB</dt><dd>${o.awbCost} RON</dd>` : ''}
+          ${o.awbError ? `<dt>Eroare AWB</dt><dd style="color:var(--status-new)">${esc(o.awbError)}</dd>` : ''}
+        </dl>
+        ${!o.awbNumber ? `<div class="status-actions"><button class="status-btn" id="genAwbBtn">📦 Generează AWB</button></div>` : ''}
+      </div>` : ''}
 
       <div class="detail-section">
         <h4>Client</h4>
@@ -776,9 +813,11 @@
       </div>
     `;
 
-    document.getElementById('modalBody').querySelectorAll('.status-btn').forEach(btn => {
+    document.getElementById('modalBody').querySelectorAll('.status-btn[data-status]').forEach(btn => {
       btn.addEventListener('click', () => updateStatus(o.id, btn.dataset.status));
     });
+    const genBtn = document.getElementById('genAwbBtn');
+    if (genBtn) genBtn.addEventListener('click', () => generateAwb(o.id, genBtn));
     document.getElementById('modalBackdrop').classList.add('active');
   }
 
@@ -787,6 +826,26 @@
     if (e.target.id === 'modalBackdrop') closeModal();
   });
   function closeModal() { document.getElementById('modalBackdrop').classList.remove('active'); }
+
+  async function generateAwb(id, btn) {
+    btn.disabled = true;
+    btn.textContent = 'Se generează AWB...';
+    try {
+      const r = await fetch('/api/admin/orders/' + encodeURIComponent(id) + '/awb', {
+        method: 'POST',
+        headers: { 'X-Admin-Token': authToken }
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success) throw new Error(data.error || 'Eroare AWB');
+      toast('AWB generat: ' + (data.awbNumber || 'OK'));
+      await refresh();
+      closeModal();
+    } catch (err) {
+      toast('Eroare AWB: ' + (err.message || err));
+      btn.disabled = false;
+      btn.textContent = '📦 Generează AWB';
+    }
+  }
 
   async function updateStatus(id, status) {
     try {
