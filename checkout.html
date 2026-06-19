@@ -481,6 +481,12 @@
   <h1>Finalizare comandă</h1>
 </div>
 
+<div style="max-width:1100px;margin:24px auto 0;padding:0 24px;">
+  <div style="background:rgba(196,146,42,0.1);border:1px solid var(--gold);border-radius:8px;padding:16px 22px;text-align:center;color:var(--warm-brown);font-size:1.02rem;">
+    🔔 <strong>Comenzile se deschid în curând.</strong> Finalizăm ultimele detalii de plată și livrare. Mulțumim pentru răbdare — revino curând!
+  </div>
+</div>
+
 <form id="checkoutForm">
   <main>
     <div>
@@ -585,7 +591,7 @@
           <span><span class="value" id="sumTotal">60</span><span class="currency" id="sumCurrency">RON</span></span>
         </div>
 
-        <button type="submit" class="btn-submit" id="submitBtn">Finalizează comanda</button>
+        <button type="submit" class="btn-submit" id="submitBtn" disabled>Comenzile se deschid în curând</button>
         <p class="summary-note">Plata cu cardul este procesată securizat prin Stripe. Livrarea coletului se face prin Sameday Easybox. Vei primi un email de confirmare.</p>
       </div>
     </aside>
@@ -748,8 +754,15 @@
     errorBox.classList.add('visible');
   }
 
+  const ORDERS_OPEN = false; // temporar dezactivat până la activarea Sameday
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (!ORDERS_OPEN) {
+      errorBox.textContent = 'Comenzile se deschid în curând. Mulțumim pentru răbdare!';
+      errorBox.classList.add('visible');
+      return;
+    }
     errorBox.classList.remove('visible');
 
     const product = getSelectedProduct();
