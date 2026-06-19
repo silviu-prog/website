@@ -193,11 +193,16 @@
       <span class="value" id="orderId">—</span>
     </div>
 
+    <div class="order-id-box" id="statusBox" style="display:none;">
+      <span class="label">Status</span>
+      <span class="value" id="statusValue">—</span>
+    </div>
+
     <div class="next-steps">
       <h3>Ce urmează</h3>
-      <ul>
-        <li>Vei primi un email de confirmare în maxim 1 oră</li>
-        <li>Pentru cartea fizică: livrare 2-5 zile lucrătoare în România</li>
+      <ul id="nextSteps">
+        <li>Vei primi un email de confirmare în scurt timp</li>
+        <li>Pentru cartea fizică: ridici coletul din Easybox-ul ales (Sameday)</li>
         <li>Pentru cartea digitală: link de descărcare după confirmarea plății</li>
         <li>Pentru orice întrebare: scrie la <a href="mailto:contact@yeshuabook.com" style="color:var(--gold-light)">contact@yeshuabook.com</a></li>
       </ul>
@@ -210,6 +215,29 @@
     const params = new URLSearchParams(location.search);
     const orderId = params.get('id');
     document.getElementById('orderId').textContent = orderId || '—';
+
+    if (orderId) {
+      fetch('/api/orders/' + encodeURIComponent(orderId))
+        .then(r => r.json())
+        .then(data => {
+          if (!data || !data.success) return;
+          const o = data.order;
+          const box = document.getElementById('statusBox');
+          const val = document.getElementById('statusValue');
+          box.style.display = 'block';
+          const map = {
+            paid: 'Plată confirmată ✓',
+            pending: 'În așteptarea confirmării plății...',
+            cod: 'Ramburs — plătești la ridicare',
+            failed: 'Plata nu a fost finalizată'
+          };
+          val.textContent = map[o.paymentStatus] || o.paymentStatus || '—';
+          if (o.awbNumber) {
+            val.textContent += ' · AWB Sameday: ' + o.awbNumber;
+          }
+        })
+        .catch(() => {});
+    }
   </script>
 </body>
 </html>
