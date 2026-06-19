@@ -16,10 +16,10 @@
 
 // ── Preț autoritativ (server) — NU se au în considerare prețurile trimise de client.
 const PRODUCTS = {
-  fizica:   { label: 'Carte fizică',   price: 45, physical: true  },
+  fizica:   { label: 'Carte fizică',   price: 55, physical: true  },
   digitala: { label: 'Carte digitală', price: 25, physical: false }
 };
-const SHIPPING_EASYBOX = 15; // RON, doar pentru cartea fizică
+const SHIPPING_EASYBOX = 0; // RON — livrare gratuită prin Easybox (doar România)
 
 export default {
   async fetch(request, env, ctx) {

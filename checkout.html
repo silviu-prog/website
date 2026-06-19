@@ -488,12 +488,12 @@
       <section class="form-section">
         <h2 class="section-heading"><span class="num">1</span> Alege formatul</h2>
         <div class="product-options">
-          <label class="product-card selected" data-product="fizica" data-price="45">
+          <label class="product-card selected" data-product="fizica" data-price="55">
             <input type="radio" name="product" value="fizica" checked />
             <span class="badge">Tipărit</span>
             <h3>Carte fizică</h3>
-            <p class="desc">Format tipărit, copertă mată, ~280 pagini. Livrare prin curier.</p>
-            <div class="price">45<small>RON</small></div>
+            <p class="desc">Format tipărit, copertă mată, ~280 pagini. Livrare gratuită prin Easybox.</p>
+            <div class="price">55<small>RON</small></div>
           </label>
           <label class="product-card" data-product="digitala" data-price="25">
             <input type="radio" name="product" value="digitala" />
@@ -529,7 +529,7 @@
       <section class="form-section" id="shippingSection">
         <h2 class="section-heading"><span class="num">3</span> Alege Easybox-ul</h2>
         <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
-          Livrăm prin <strong>Sameday Easybox</strong>. Caută după oraș sau adresă și alege locker-ul de unde îți ridici coletul.
+          Livrăm gratuit prin <strong>Sameday Easybox</strong>, doar pe teritoriul României. Caută după oraș sau adresă și alege locker-ul de unde îți ridici coletul.
         </p>
         <input type="hidden" name="lockerId" id="lockerId" />
         <div class="field">
@@ -580,7 +580,7 @@
 
         <div class="summary-line">
           <span class="label" id="sumProduct">Carte fizică × 1</span>
-          <span class="value" id="sumProductPrice">45 RON</span>
+          <span class="value" id="sumProductPrice">55 RON</span>
         </div>
         <div class="summary-line">
           <span class="label">Livrare</span>
@@ -602,10 +602,10 @@
 <script>
   // ── Prețuri (informativ; valorile finale sunt calculate de server) ──
   const PRICES = {
-    fizica:    { value: 45, label: 'Carte fizică' },
+    fizica:    { value: 55, label: 'Carte fizică' },
     digitala:  { value: 25, label: 'Carte digitală' }
   };
-  const SHIPPING_EASYBOX = 15;
+  const SHIPPING_EASYBOX = 0;
 
   const form = document.getElementById('checkoutForm');
   const productCards = document.querySelectorAll('.product-card');
@@ -630,7 +630,7 @@
 
     document.getElementById('sumProduct').textContent = productData.label + ' × 1';
     document.getElementById('sumProductPrice').textContent = productData.value + ' RON';
-    document.getElementById('sumShipping').textContent = isPhysical ? (shippingVal + ' RON') : 'Gratuit (email)';
+    document.getElementById('sumShipping').textContent = !isPhysical ? 'Gratuit (email)' : (shippingVal === 0 ? 'Gratuit' : shippingVal + ' RON');
     document.getElementById('sumTotal').textContent = total;
 
     if (isPhysical) {
