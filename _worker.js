@@ -170,8 +170,8 @@ async function handleCreateOrder(request, env) {
   if (!validString(c.phone, 50)) errors.push('Telefon invalid');
 
   const isPhysical = PRODUCTS[product] && PRODUCTS[product].physical;
-  let paymentMethod = body.paymentMethod === 'cod' ? 'cod' : 'card';
-  if (!isPhysical) paymentMethod = 'card';
+  // Plata exclusiv cu cardul (Stripe). Ramburs eliminat.
+  const paymentMethod = 'card';
 
   // Adresă de livrare (livrare la adresă prin curier, doar România).
   const sh = body.shipping || {};
@@ -192,8 +192,8 @@ async function handleCreateOrder(request, env) {
   const now = new Date().toISOString();
   const productLabel = PRODUCTS[product].label;
   const shippingMethod = isPhysical ? 'Curier — livrare la adresă' : 'Livrare prin email';
-  const paymentLabel = paymentMethod === 'cod' ? 'Ramburs la livrare' : 'Card online (Stripe)';
-  const paymentStatus = paymentMethod === 'cod' ? 'cod' : 'pending';
+  const paymentLabel = 'Card online (Stripe)';
+  const paymentStatus = 'pending';
 
   await env.DB.prepare(`
     INSERT INTO orders (
@@ -220,24 +220,19 @@ async function handleCreateOrder(request, env) {
   const origin = siteOrigin(request, env);
 
   // ── Plata cu cardul → Stripe Checkout ────────────────────────
-  if (paymentMethod === 'card') {
-    try {
-      const session = await createStripeCheckout(env, {
-        origin, id, productLabel, unitPrice, shippingPrice, isPhysical,
-        email: c.email.trim().toLowerCase()
-      });
-      await env.DB.prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?')
-        .bind(session.id, id).run();
-      return json({ success: true, orderId: id, redirectUrl: session.url });
-    } catch (err) {
-      await env.DB.prepare("UPDATE orders SET payment_status = 'failed', awb_error = ? WHERE id = ?")
-        .bind('Stripe: ' + (err.message || err), id).run();
-      return json({ success: false, error: 'Nu am putut iniția plata. ' + (err.message || '') }, 502);
-    }
+  try {
+    const session = await createStripeCheckout(env, {
+      origin, id, productLabel, unitPrice, shippingPrice, isPhysical,
+      email: c.email.trim().toLowerCase()
+    });
+    await env.DB.prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?')
+      .bind(session.id, id).run();
+    return json({ success: true, orderId: id, redirectUrl: session.url });
+  } catch (err) {
+    await env.DB.prepare("UPDATE orders SET payment_status = 'failed', awb_error = ? WHERE id = ?")
+      .bind('Stripe: ' + (err.message || err), id).run();
+    return json({ success: false, error: 'Nu am putut iniția plata. ' + (err.message || '') }, 502);
   }
-
-  // ── Ramburs → comanda e salvată; expedierea + AWB se fac MANUAL din admin.
-  return json({ success: true, orderId: id, redirectUrl: `${origin}/thank-you?id=${encodeURIComponent(id)}` });
 }
 
 async function handlePublicOrder(env, id) {

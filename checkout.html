@@ -555,22 +555,6 @@
               <div class="sublabel">Plată securizată cu cardul. Vei fi redirecționat către Stripe.</div>
             </div>
           </label>
-          <label class="shipping-card" data-pay="cod" id="codOption">
-            <input type="radio" name="paymentMethod" value="cod" />
-            <div>
-              <div class="label">💰 Ramburs la livrare</div>
-              <div class="sublabel">Plătești cash curierului, la primirea coletului.</div>
-            </div>
-          </label>
-        </div>
-      </section>
-
-      <!-- Step 5: Notes -->
-      <section class="form-section">
-        <h2 class="section-heading"><span class="num">5</span> Mențiuni (opțional)</h2>
-        <div class="field">
-          <label>Dedicație, mesaj sau alte detalii</label>
-          <textarea name="notes" placeholder="Ex: vă rog să livrați după ora 18..."></textarea>
         </div>
       </section>
     </div>
@@ -612,7 +596,6 @@
   const form = document.getElementById('checkoutForm');
   const productCards = document.querySelectorAll('.product-card');
   const shippingSection = document.getElementById('shippingSection');
-  const codOption = document.getElementById('codOption');
   const paymentOptions = document.getElementById('paymentOptions');
 
   function getSelectedProduct() {
@@ -632,18 +615,10 @@
 
     document.getElementById('sumProduct').textContent = productData.label + ' × 1';
     document.getElementById('sumProductPrice').textContent = productData.value + ' RON';
-    document.getElementById('sumShipping').textContent = !isPhysical ? 'Gratuit (email)' : (shippingVal === 0 ? 'Gratuit' : shippingVal + ' RON');
+    document.getElementById('sumShipping').textContent = shippingVal === 0 ? 'Gratuit' : shippingVal + ' RON';
     document.getElementById('sumTotal').textContent = total;
 
-    if (isPhysical) {
-      shippingSection.style.display = 'block';
-      codOption.style.display = 'flex';
-    } else {
-      // Digital: fără livrare, doar plată cu cardul.
-      shippingSection.style.display = 'none';
-      codOption.style.display = 'none';
-      selectPayment('card');
-    }
+    shippingSection.style.display = isPhysical ? 'block' : 'none';
   }
 
   productCards.forEach(card => {
@@ -725,8 +700,7 @@
         city:    fd.get('shippingCity'),
         county:  fd.get('shippingCounty'),
         postal:  fd.get('shippingPostal')
-      } : null,
-      notes: fd.get('notes') || ''
+      } : null
     };
 
     try {
@@ -739,7 +713,7 @@
       if (!resp.ok || !data.success) {
         throw new Error(data.error || 'Eroare la trimiterea comenzii');
       }
-      // Card → redirect către Stripe; ramburs → pagina de mulțumire.
+      // Redirect către Stripe pentru plată.
       window.location.href = data.redirectUrl || ('/thank-you?id=' + encodeURIComponent(data.orderId));
     } catch (err) {
       errorBox.textContent = err.message || 'A apărut o eroare. Te rugăm încearcă din nou sau contactează-ne.';
