@@ -780,14 +780,15 @@
 
       ${o.product === 'fizica' ? `
       <div class="detail-section">
-        <h4>Livrare Easybox / AWB Sameday</h4>
+        <h4>AWB / Expediere</h4>
         <dl class="detail-grid">
-          <dt>Easybox</dt><dd>${esc(o.locker_name || o.locker_id || '—')}</dd>
-          <dt>AWB</dt><dd class="mono">${o.awbNumber ? esc(o.awbNumber) : '<span style="color:var(--text-muted)">negenerat</span>'}</dd>
-          ${o.awbCost != null ? `<dt>Cost AWB</dt><dd>${o.awbCost} RON</dd>` : ''}
-          ${o.awbError ? `<dt>Eroare AWB</dt><dd style="color:var(--status-new)">${esc(o.awbError)}</dd>` : ''}
+          <dt>AWB curent</dt><dd class="mono">${o.awbNumber ? esc(o.awbNumber) : '<span style="color:var(--text-muted)">neintrodus</span>'}</dd>
         </dl>
-        ${!o.awbNumber ? `<div class="status-actions"><button class="status-btn" id="genAwbBtn">📦 Generează AWB</button></div>` : ''}
+        <p style="font-size:0.85rem;color:var(--text-muted);margin:8px 0;">Introdu manual numărul AWB primit de la curier (Sameday etc.). Comanda devine „Expediată".</p>
+        <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">
+          <input type="text" id="awbInput" placeholder="Ex: 2RO01234567890" value="${o.awbNumber ? esc(o.awbNumber) : ''}" style="flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--border);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:0.9rem;" />
+          <button class="status-btn" id="saveAwbBtn">💾 Salvează AWB</button>
+        </div>
       </div>` : ''}
 
       <div class="detail-section">
@@ -816,8 +817,8 @@
     document.getElementById('modalBody').querySelectorAll('.status-btn[data-status]').forEach(btn => {
       btn.addEventListener('click', () => updateStatus(o.id, btn.dataset.status));
     });
-    const genBtn = document.getElementById('genAwbBtn');
-    if (genBtn) genBtn.addEventListener('click', () => generateAwb(o.id, genBtn));
+    const saveAwbBtn = document.getElementById('saveAwbBtn');
+    if (saveAwbBtn) saveAwbBtn.addEventListener('click', () => saveAwb(o.id, saveAwbBtn));
     document.getElementById('modalBackdrop').classList.add('active');
   }
 
@@ -827,23 +828,27 @@
   });
   function closeModal() { document.getElementById('modalBackdrop').classList.remove('active'); }
 
-  async function generateAwb(id, btn) {
+  async function saveAwb(id, btn) {
+    const input = document.getElementById('awbInput');
+    const awb = (input && input.value || '').trim();
+    if (!awb) { toast('Introdu numărul AWB'); return; }
     btn.disabled = true;
-    btn.textContent = 'Se generează AWB...';
+    btn.textContent = 'Se salvează...';
     try {
       const r = await fetch('/api/admin/orders/' + encodeURIComponent(id) + '/awb', {
         method: 'POST',
-        headers: { 'X-Admin-Token': authToken }
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': authToken },
+        body: JSON.stringify({ awbNumber: awb })
       });
       const data = await r.json();
       if (!r.ok || !data.success) throw new Error(data.error || 'Eroare AWB');
-      toast('AWB generat: ' + (data.awbNumber || 'OK'));
+      toast('AWB salvat: ' + data.awbNumber);
       await refresh();
       closeModal();
     } catch (err) {
-      toast('Eroare AWB: ' + (err.message || err));
+      toast('Eroare: ' + (err.message || err));
       btn.disabled = false;
-      btn.textContent = '📦 Generează AWB';
+      btn.textContent = '💾 Salvează AWB';
     }
   }
 
