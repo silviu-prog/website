@@ -19,7 +19,7 @@ const PRODUCTS = {
   fizica:   { label: 'Carte fizică',   price: 55, physical: true  }
   // Varianta digitală e dezactivată deocamdată.
 };
-const SHIPPING_EASYBOX = 15; // RON — transport prin Easybox (doar România)
+const SHIPPING = 15; // RON — transport prin curier (livrare la adresă, România)
 
 export default {
   async fetch(request, env, ctx) {
@@ -171,26 +171,27 @@ async function handleCreateOrder(request, env) {
 
   const isPhysical = PRODUCTS[product] && PRODUCTS[product].physical;
   let paymentMethod = body.paymentMethod === 'cod' ? 'cod' : 'card';
-  // Ramburs disponibil doar pentru livrare fizică (Easybox).
   if (!isPhysical) paymentMethod = 'card';
 
-  let locker = null;
+  // Adresă de livrare (livrare la adresă prin curier, doar România).
+  const sh = body.shipping || {};
   if (isPhysical) {
-    locker = body.locker || {};
-    if (!locker.id) errors.push('Selectează un Easybox');
-    if (!validString(locker.city || '', 120)) errors.push('Locker fără localitate');
+    if (!validString(sh.address, 300)) errors.push('Adresă invalidă');
+    if (!validString(sh.city, 120)) errors.push('Localitate invalidă');
+    if (!validString(sh.county, 120)) errors.push('Județ invalid');
+    if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid');
   }
   if (errors.length) return json({ success: false, error: errors.join('; ') }, 400);
 
   // ── Prețuri (autoritativ, din server) ────────────────────────
   const unitPrice = PRODUCTS[product].price;
-  const shippingPrice = isPhysical ? SHIPPING_EASYBOX : 0;
+  const shippingPrice = isPhysical ? SHIPPING : 0;
   const total = unitPrice + shippingPrice;
 
   const id = generateOrderId();
   const now = new Date().toISOString();
   const productLabel = PRODUCTS[product].label;
-  const shippingMethod = isPhysical ? `Easybox: ${locker.name || locker.id}` : 'Livrare prin email';
+  const shippingMethod = isPhysical ? 'Curier — livrare la adresă' : 'Livrare prin email';
   const paymentLabel = paymentMethod === 'cod' ? 'Ramburs la livrare' : 'Card online (Stripe)';
   const paymentStatus = paymentMethod === 'cod' ? 'cod' : 'pending';
 
@@ -201,21 +202,18 @@ async function handleCreateOrder(request, env) {
       shipping_method, payment_method, payment_status,
       customer_name, customer_email, customer_phone,
       shipping_country, shipping_address, shipping_city, shipping_postal, shipping_region,
-      locker_id, locker_name,
       notes
-    ) VALUES (?, ?, 'new', ?, ?, 1, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, 'new', ?, ?, 1, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id, now,
     product, productLabel, unitPrice, shippingPrice, total,
     shippingMethod, paymentLabel, paymentStatus,
     c.name.trim(), c.email.trim().toLowerCase(), c.phone.trim(),
     isPhysical ? 'RO' : null,
-    isPhysical ? (locker.address || locker.name || null) : null,
-    isPhysical ? (locker.city || null) : null,
-    isPhysical ? (locker.postalCode || null) : null,
-    isPhysical ? (locker.county || null) : null,
-    isPhysical ? String(locker.id) : null,
-    isPhysical ? (locker.name || null) : null,
+    isPhysical ? sh.address.trim() : null,
+    isPhysical ? sh.city.trim() : null,
+    isPhysical ? sh.postal.trim() : null,
+    isPhysical ? sh.county.trim() : null,
     validString(body.notes || '', 1000) ? body.notes.trim() : null
   ).run();
 
@@ -238,9 +236,7 @@ async function handleCreateOrder(request, env) {
     }
   }
 
-  // ── Ramburs → generăm AWB acum (cash on delivery = total) ────
-  // Nu blocăm comanda dacă AWB-ul eșuează; o salvăm și se poate regenera din admin.
-  await tryCreateAwbForOrder(env, id).catch(() => {});
+  // ── Ramburs → comanda e salvată; expedierea + AWB se fac MANUAL din admin.
   return json({ success: true, orderId: id, redirectUrl: `${origin}/thank-you?id=${encodeURIComponent(id)}` });
 }
 
@@ -285,7 +281,7 @@ async function createStripeCheckout(env, { origin, id, productLabel, unitPrice, 
       price_data: {
         currency: 'ron',
         unit_amount: Math.round(shippingPrice * 100),
-        product_data: { name: 'Livrare Easybox (Sameday)' }
+        product_data: { name: 'Transport (livrare prin curier)' }
       }
     });
   }
@@ -340,8 +336,7 @@ async function handleStripeWebhook(request, env) {
       await env.DB.prepare(
         "UPDATE orders SET payment_status = 'paid', status = 'confirmed' WHERE id = ? AND payment_status != 'paid'"
       ).bind(orderId).run();
-      // AWB automat după confirmarea plății (doar produs fizic).
-      await tryCreateAwbForOrder(env, orderId).catch(() => {});
+      // AWB-ul Sameday se introduce MANUAL din panoul de admin după expediere.
     }
   }
 
@@ -566,18 +561,27 @@ async function handleDeleteOrder(request, env, id) {
   return json({ success: true });
 }
 
-// Generare / regenerare manuală AWB din panoul admin.
+// Salvare MANUALĂ a AWB-ului (introdus de admin după expediere la curier).
+// Body: { awbNumber: "..." }. Setează numărul și marchează comanda ca expediată.
 async function handleGenerateAwb(request, env, id) {
   const unauth = requireAdmin(request, env);
   if (unauth) return unauth;
   if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
 
-  try {
-    const result = await tryCreateAwbForOrder(env, id);
-    return json({ success: true, awbNumber: result.awbNumber, skipped: result.skipped, already: result.already });
-  } catch (err) {
-    return json({ success: false, error: err.message || String(err) }, 502);
+  let body;
+  try { body = await request.json(); } catch { return json({ success: false, error: 'Invalid JSON' }, 400); }
+
+  const awb = (body.awbNumber == null ? '' : String(body.awbNumber)).trim();
+  if (!awb) return json({ success: false, error: 'Introdu numărul AWB' }, 400);
+  if (awb.length > 100) return json({ success: false, error: 'AWB prea lung' }, 400);
+
+  const result = await env.DB.prepare(
+    "UPDATE orders SET awb_number = ?, awb_error = NULL, status = 'shipped' WHERE id = ?"
+  ).bind(awb, id).run();
+  if (!result.meta || result.meta.changes === 0) {
+    return json({ success: false, error: 'Comanda nu a fost găsită' }, 404);
   }
+  return json({ success: true, awbNumber: awb });
 }
 
 // Diagnostic: testează autentificarea Sameday și ajută la descoperirea ID-urilor
