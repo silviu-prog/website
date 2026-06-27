@@ -522,19 +522,58 @@
       <section class="form-section" id="shippingSection">
         <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
         <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
-          Livrăm prin curier, doar pe teritoriul <strong>României</strong>. Transport <strong>24,99 lei</strong>.
+          Livrăm prin curier în <strong>România</strong>, <strong>Uniunea Europeană</strong> și internațional (<strong>SUA, UK, Canada</strong>). Transportul se calculează automat în funcție de țară.
         </p>
         <div class="field-grid">
+          <div class="field full">
+            <label>Țara <span class="req">*</span></label>
+            <select name="shippingCountry" id="shippingCountry" autocomplete="country">
+              <option value="RO" selected>România</option>
+              <optgroup label="Uniunea Europeană">
+                <option value="AT">Austria</option>
+                <option value="BE">Belgia</option>
+                <option value="BG">Bulgaria</option>
+                <option value="HR">Croația</option>
+                <option value="CY">Cipru</option>
+                <option value="CZ">Cehia</option>
+                <option value="DK">Danemarca</option>
+                <option value="EE">Estonia</option>
+                <option value="FI">Finlanda</option>
+                <option value="FR">Franța</option>
+                <option value="DE">Germania</option>
+                <option value="GR">Grecia</option>
+                <option value="HU">Ungaria</option>
+                <option value="IE">Irlanda</option>
+                <option value="IT">Italia</option>
+                <option value="LV">Letonia</option>
+                <option value="LT">Lituania</option>
+                <option value="LU">Luxemburg</option>
+                <option value="MT">Malta</option>
+                <option value="NL">Olanda</option>
+                <option value="PL">Polonia</option>
+                <option value="PT">Portugalia</option>
+                <option value="SK">Slovacia</option>
+                <option value="SI">Slovenia</option>
+                <option value="ES">Spania</option>
+                <option value="SE">Suedia</option>
+              </optgroup>
+              <optgroup label="Internațional">
+                <option value="GB">Regatul Unit (UK)</option>
+                <option value="US">Statele Unite (SUA)</option>
+                <option value="CA">Canada</option>
+              </optgroup>
+            </select>
+          </div>
           <div class="field full">
             <label>Stradă, număr, bloc, apartament <span class="req">*</span></label>
             <input type="text" name="shippingAddress" autocomplete="street-address" placeholder="Ex: Str. Florilor 12, bl. A2, ap. 5" />
           </div>
           <div class="field">
-            <label>Localitate <span class="req">*</span></label>
+            <label>Localitate / Oraș <span class="req">*</span></label>
             <input type="text" name="shippingCity" autocomplete="address-level2" placeholder="Ex: Cluj-Napoca" />
           </div>
           <div class="field">
-            <label>Județ <span class="req">*</span></label>
+            <label>Județ / Stat / Regiune</label>
             <input type="text" name="shippingCounty" autocomplete="address-level1" placeholder="Ex: Cluj" />
           </div>
           <div class="field">
@@ -591,7 +630,15 @@
   const PRICES = {
     fizica:    { value: 55, label: 'Carte fizică' }
   };
-  const SHIPPING = 24.99;
+  const SHIPPING = { RO: 24.99, EU: 59, WORLD: 119 };
+  const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
+  const WORLD_COUNTRIES = ['GB','US','CA'];
+  function shippingForCountry(cc) {
+    if (cc === 'RO') return SHIPPING.RO;
+    if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
+    if (WORLD_COUNTRIES.includes(cc)) return SHIPPING.WORLD;
+    return SHIPPING.RO;
+  }
   const fmtPrice = (n) => Number.isInteger(n) ? String(n) : n.toFixed(2).replace('.', ',');
 
   const form = document.getElementById('checkoutForm');
@@ -611,7 +658,9 @@
     const product = getSelectedProduct();
     const productData = PRICES[product];
     const isPhysical = product === 'fizica';
-    const shippingVal = isPhysical ? SHIPPING : 0;
+    const countryEl = document.getElementById('shippingCountry');
+    const country = countryEl ? countryEl.value : 'RO';
+    const shippingVal = isPhysical ? shippingForCountry(country) : 0;
     const total = Math.round((productData.value + shippingVal) * 100) / 100;
 
     document.getElementById('sumProduct').textContent = productData.label + ' × 1';
@@ -642,6 +691,10 @@
   paymentOptions.querySelectorAll('.shipping-card').forEach(card => {
     card.addEventListener('click', () => selectPayment(card.dataset.pay));
   });
+
+  // Recalculează transportul când se schimbă țara.
+  const countrySelect = document.getElementById('shippingCountry');
+  if (countrySelect) countrySelect.addEventListener('change', updateSummary);
 
   // ── Preselect product din ?product= ───────────────────────────
   const urlProduct = new URLSearchParams(location.search).get('product');
@@ -675,10 +728,10 @@
 
     // Validare adresă (livrare fizică).
     if (isPhysical) {
-      const required = ['shippingAddress', 'shippingCity', 'shippingCounty', 'shippingPostal'];
+      const required = ['shippingAddress', 'shippingCity', 'shippingPostal'];
       const missing = required.some(n => !String(fd.get(n) || '').trim());
       if (missing) {
-        errorBox.textContent = 'Te rugăm completează adresa de livrare (stradă, localitate, județ, cod poștal).';
+        errorBox.textContent = 'Te rugăm completează adresa de livrare (stradă, localitate, cod poștal).';
         errorBox.classList.add('visible');
         shippingSection.scrollIntoView({ behavior: 'smooth' });
         return;
@@ -697,6 +750,7 @@
         phone: fd.get('customerPhone')
       },
       shipping: isPhysical ? {
+        country: fd.get('shippingCountry'),
         address: fd.get('shippingAddress'),
         city:    fd.get('shippingCity'),
         county:  fd.get('shippingCounty'),

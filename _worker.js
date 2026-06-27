@@ -19,7 +19,16 @@ const PRODUCTS = {
   fizica:   { label: 'Carte fizică',   price: 55, physical: true  }
   // Varianta digitală e dezactivată deocamdată.
 };
-const SHIPPING = 24.99; // RON — transport prin curier (livrare la adresă, România)
+// Transport pe zone (RON). Se poate ajusta oricând.
+const SHIPPING = { RO: 24.99, EU: 59, WORLD: 119 };
+const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
+const WORLD_COUNTRIES = ['GB','US','CA']; // SUA, UK, Canada
+function shippingForCountry(cc) {
+  if (cc === 'RO') return SHIPPING.RO;
+  if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
+  if (WORLD_COUNTRIES.includes(cc)) return SHIPPING.WORLD;
+  return null; // țară neacceptată
+}
 
 export default {
   async fetch(request, env, ctx) {
@@ -173,19 +182,22 @@ async function handleCreateOrder(request, env) {
   // Plata exclusiv cu cardul (Stripe). Ramburs eliminat.
   const paymentMethod = 'card';
 
-  // Adresă de livrare (livrare la adresă prin curier, doar România).
+  // Adresă de livrare (România, UE sau internațional — SUA/UK/Canada).
   const sh = body.shipping || {};
+  const country = isPhysical ? String(sh.country || 'RO').toUpperCase().slice(0, 2) : null;
+  let shippingPrice = 0;
   if (isPhysical) {
+    shippingPrice = shippingForCountry(country);
+    if (shippingPrice == null) { errors.push('Țară de livrare neacceptată'); shippingPrice = 0; }
     if (!validString(sh.address, 300)) errors.push('Adresă invalidă');
     if (!validString(sh.city, 120)) errors.push('Localitate invalidă');
-    if (!validString(sh.county, 120)) errors.push('Județ invalid');
     if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid');
+    // Județ / stat / regiune — opțional (diferă de la o țară la alta).
   }
   if (errors.length) return json({ success: false, error: errors.join('; ') }, 400);
 
   // ── Prețuri (autoritativ, din server) ────────────────────────
   const unitPrice = PRODUCTS[product].price;
-  const shippingPrice = isPhysical ? SHIPPING : 0;
   const total = Math.round((unitPrice + shippingPrice) * 100) / 100;
 
   const id = generateOrderId();
@@ -209,11 +221,11 @@ async function handleCreateOrder(request, env) {
     product, productLabel, unitPrice, shippingPrice, total,
     shippingMethod, paymentLabel, paymentStatus,
     c.name.trim(), c.email.trim().toLowerCase(), c.phone.trim(),
-    isPhysical ? 'RO' : null,
+    isPhysical ? country : null,
     isPhysical ? sh.address.trim() : null,
     isPhysical ? sh.city.trim() : null,
     isPhysical ? sh.postal.trim() : null,
-    isPhysical ? sh.county.trim() : null,
+    isPhysical && sh.county ? String(sh.county).trim() : null,
     validString(body.notes || '', 1000) ? body.notes.trim() : null
   ).run();
 
