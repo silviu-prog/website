@@ -20,12 +20,14 @@ const PRODUCTS = {
   // Varianta digitală e dezactivată deocamdată.
 };
 // Transport pe zone (RON). Se poate ajusta oricând.
-const SHIPPING = { RO: 24.99, EU: 59, WORLD: 119 };
+const SHIPPING = { RO: 24.99, EU: 59, EUR_NON_EU: 79, WORLD: 119 };
 const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
-const WORLD_COUNTRIES = ['GB','US','CA','CH','NO','AU']; // UK, SUA, Canada, Elveția, Norvegia, Australia
+const EUR_NON_EU_COUNTRIES = ['CH','NO']; // Elveția, Norvegia
+const WORLD_COUNTRIES = ['GB','US','CA','AU']; // UK, SUA, Canada, Australia
 function shippingForCountry(cc) {
   if (cc === 'RO') return SHIPPING.RO;
   if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
+  if (EUR_NON_EU_COUNTRIES.includes(cc)) return SHIPPING.EUR_NON_EU;
   if (WORLD_COUNTRIES.includes(cc)) return SHIPPING.WORLD;
   return null; // țară neacceptată
 }

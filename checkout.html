@@ -557,12 +557,14 @@
                 <option value="ES">Spania</option>
                 <option value="SE">Suedia</option>
               </optgroup>
+              <optgroup label="Europa (non-UE)">
+                <option value="CH">Elveția</option>
+                <option value="NO">Norvegia</option>
+              </optgroup>
               <optgroup label="Internațional">
                 <option value="GB">Regatul Unit (UK)</option>
                 <option value="US">Statele Unite (SUA)</option>
                 <option value="CA">Canada</option>
-                <option value="CH">Elveția</option>
-                <option value="NO">Norvegia</option>
                 <option value="AU">Australia</option>
               </optgroup>
             </select>
@@ -633,12 +635,14 @@
   const PRICES = {
     fizica:    { value: 55, label: 'Carte fizică' }
   };
-  const SHIPPING = { RO: 24.99, EU: 59, WORLD: 119 };
+  const SHIPPING = { RO: 24.99, EU: 59, EUR_NON_EU: 79, WORLD: 119 };
   const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
-  const WORLD_COUNTRIES = ['GB','US','CA','CH','NO','AU'];
+  const EUR_NON_EU_COUNTRIES = ['CH','NO'];
+  const WORLD_COUNTRIES = ['GB','US','CA','AU'];
   function shippingForCountry(cc) {
     if (cc === 'RO') return SHIPPING.RO;
     if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
+    if (EUR_NON_EU_COUNTRIES.includes(cc)) return SHIPPING.EUR_NON_EU;
     if (WORLD_COUNTRIES.includes(cc)) return SHIPPING.WORLD;
     return SHIPPING.RO;
   }
