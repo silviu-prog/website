@@ -561,6 +561,9 @@
                 <option value="GB">Regatul Unit (UK)</option>
                 <option value="US">Statele Unite (SUA)</option>
                 <option value="CA">Canada</option>
+                <option value="CH">Elveția</option>
+                <option value="NO">Norvegia</option>
+                <option value="AU">Australia</option>
               </optgroup>
             </select>
           </div>
@@ -632,7 +635,7 @@
   };
   const SHIPPING = { RO: 24.99, EU: 59, WORLD: 119 };
   const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
-  const WORLD_COUNTRIES = ['GB','US','CA'];
+  const WORLD_COUNTRIES = ['GB','US','CA','CH','NO','AU'];
   function shippingForCountry(cc) {
     if (cc === 'RO') return SHIPPING.RO;
     if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
