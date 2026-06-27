@@ -388,6 +388,14 @@
       display: flex;
       gap: 16px;
       flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .hero-cta .btn-primary,
+    .hero-cta .btn-secondary {
+      flex: 1 1 0;
+      justify-content: center;
+      text-align: center;
+      max-width: 260px;
     }
 
     /* Hero pre-order form */
@@ -1600,28 +1608,11 @@
       <p class="hero-author">— Dacă ai fi ca Iisus, probabil n-ai mai fi creștin —</p>
 
       <p class="hero-preorder-note">Disponibilă acum, în format tipărit — <strong>55 lei</strong> + transport. Livrare prin curier în România, UE și internațional.</p>
-      <a href="/checkout?product=fizica" class="btn-primary" style="display:inline-flex;margin-bottom:18px;">
-        Comandă cartea
-      </a>
-      <form class="preorder-form hero-preorder-form" id="heroPreorderForm">
-        <input
-          type="email"
-          name="fields[email]"
-          id="heroPreorderEmail"
-          class="preorder-input"
-          placeholder="adresa ta de email"
-          required
-          autocomplete="email"
-          aria-label="email" />
-        <button type="submit" class="btn-primary preorder-btn">
-          Abonează-mă la noutăți
-        </button>
-      </form>
-      <div class="preorder-success hero-preorder-success" id="heroPreorderSuccess">
-        Mulțumim! Ți-am notat adresa. Te anunțăm imediat ce cartea e disponibilă. 🕊️
-      </div>
 
       <div class="hero-cta">
+        <a href="/checkout?product=fizica" class="btn-primary">
+          Comandă Cartea
+        </a>
         <a href="#cuprins" class="btn-secondary" id="discoverBtn">
           Descoperă Cartea
         </a>
