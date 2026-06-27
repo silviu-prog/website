@@ -19,7 +19,7 @@ const PRODUCTS = {
   fizica:   { label: 'Carte fizică',   price: 55, physical: true  }
   // Varianta digitală e dezactivată deocamdată.
 };
-const SHIPPING = 15; // RON — transport prin curier (livrare la adresă, România)
+const SHIPPING = 24.99; // RON — transport prin curier (livrare la adresă, România)
 
 export default {
   async fetch(request, env, ctx) {
@@ -186,7 +186,7 @@ async function handleCreateOrder(request, env) {
   // ── Prețuri (autoritativ, din server) ────────────────────────
   const unitPrice = PRODUCTS[product].price;
   const shippingPrice = isPhysical ? SHIPPING : 0;
-  const total = unitPrice + shippingPrice;
+  const total = Math.round((unitPrice + shippingPrice) * 100) / 100;
 
   const id = generateOrderId();
   const now = new Date().toISOString();
