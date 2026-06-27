@@ -3101,32 +3101,11 @@
       Plată securizată cu cardul, prin Stripe. Trimitem prin curier în România, UE și internațional.
     </p>
 
-    <div class="cta-options" style="margin-bottom:26px;">
+    <div class="cta-options">
       <a href="/checkout?product=fizica" class="btn-primary">Comandă cartea</a>
     </div>
 
-    <p class="cta-text" style="font-size:0.95rem;margin-bottom:14px;">Vrei doar să fii anunțat de noutăți? Lasă-ți emailul:</p>
-
-    <form class="preorder-form" id="preorderForm">
-      <input
-        type="email"
-        name="fields[email]"
-        id="preorderEmail"
-        class="preorder-input"
-        placeholder="adresa ta de email"
-        required
-        autocomplete="email"
-        aria-label="email" />
-      <button type="submit" class="btn-primary preorder-btn">
-        Abonează-mă
-      </button>
-    </form>
-
-    <div class="preorder-success" id="preorderSuccess">
-      Mulțumim! Ți-am notat adresa. Te anunțăm imediat ce cartea e disponibilă. 🕊️
-    </div>
-
-    <p class="cta-note">Fără spam. Te anunțăm o singură dată, când cartea e disponibilă.</p>
+    <p class="cta-note">Plată securizată cu cardul (Stripe) · Livrare prin curier · România, UE și internațional</p>
   </div>
 </section>
 
@@ -3208,7 +3187,6 @@
         success.classList.add('show');
       });
     }
-    wirePreorder('preorderForm', 'preorderEmail', 'preorderSuccess');
   });
 
   // TOC filter — show only chapters with preview pages
