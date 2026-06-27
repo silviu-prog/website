@@ -198,9 +198,14 @@ async function handleCreateOrder(request, env) {
   }
   if (errors.length) return json({ success: false, error: errors.join('; ') }, 400);
 
+  // ── Cantitate ────────────────────────────────────────────────
+  let quantity = parseInt(body.quantity, 10);
+  if (!Number.isInteger(quantity) || quantity < 1) quantity = 1;
+  if (quantity > 20) quantity = 20;
+
   // ── Prețuri (autoritativ, din server) ────────────────────────
   const unitPrice = PRODUCTS[product].price;
-  const total = Math.round((unitPrice + shippingPrice) * 100) / 100;
+  const total = Math.round((unitPrice * quantity + shippingPrice) * 100) / 100;
 
   const id = generateOrderId();
   const now = new Date().toISOString();
@@ -217,10 +222,10 @@ async function handleCreateOrder(request, env) {
       customer_name, customer_email, customer_phone,
       shipping_country, shipping_address, shipping_city, shipping_postal, shipping_region,
       notes
-    ) VALUES (?, ?, 'new', ?, ?, 1, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, 'new', ?, ?, ?, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id, now,
-    product, productLabel, unitPrice, shippingPrice, total,
+    product, productLabel, quantity, unitPrice, shippingPrice, total,
     shippingMethod, paymentLabel, paymentStatus,
     c.name.trim(), c.email.trim().toLowerCase(), c.phone.trim(),
     isPhysical ? country : null,
@@ -236,7 +241,7 @@ async function handleCreateOrder(request, env) {
   // ── Plata cu cardul → Stripe Checkout ────────────────────────
   try {
     const session = await createStripeCheckout(env, {
-      origin, id, productLabel, unitPrice, shippingPrice, isPhysical,
+      origin, id, productLabel, unitPrice, quantity, shippingPrice, isPhysical,
       email: c.email.trim().toLowerCase()
     });
     await env.DB.prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?')
@@ -273,11 +278,11 @@ async function handleLockers(env) {
 // Stripe
 // ────────────────────────────────────────────────────────────────
 
-async function createStripeCheckout(env, { origin, id, productLabel, unitPrice, shippingPrice, isPhysical, email }) {
+async function createStripeCheckout(env, { origin, id, productLabel, unitPrice, quantity, shippingPrice, isPhysical, email }) {
   if (!env.STRIPE_SECRET_KEY) throw new Error('STRIPE_SECRET_KEY lipsește');
 
   const lineItems = [{
-    quantity: 1,
+    quantity: quantity || 1,
     price_data: {
       currency: 'ron',
       unit_amount: Math.round(unitPrice * 100),

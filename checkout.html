@@ -492,9 +492,13 @@
             <input type="radio" name="product" value="fizica" checked />
             <span class="badge">Tipărit</span>
             <h3>Carte fizică</h3>
-            <p class="desc">Format tipărit, copertă mată, ~330 pagini. Livrare prin curier în toată România.</p>
+            <p class="desc">Format tipărit, copertă mată, ~330 pagini. Livrare prin curier în România și internațional.</p>
             <div class="price">55<small>RON</small></div>
           </label>
+        </div>
+        <div class="field" style="margin-top:18px;max-width:200px;">
+          <label>Câte exemplare?</label>
+          <input type="number" name="quantity" id="quantity" value="1" min="1" max="20" step="1" inputmode="numeric" />
         </div>
       </section>
 
@@ -522,7 +526,7 @@
       <section class="form-section" id="shippingSection">
         <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
         <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
-          Livrăm prin curier în <strong>România</strong>, <strong>Uniunea Europeană</strong> și internațional (<strong>SUA, UK, Canada</strong>). Transportul se calculează automat în funcție de țară.
+          Livrăm prin curier în <strong>România</strong>, <strong>Uniunea Europeană</strong> și <strong>internațional</strong>. Transportul se calculează automat în funcție de țara aleasă.
         </p>
         <div class="field-grid">
           <div class="field full">
@@ -624,7 +628,7 @@
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">Finalizează comanda</button>
-        <p class="summary-note">Plata cu cardul este procesată securizat prin Stripe. Livrarea se face prin curier, în toată România. Vei primi un email de confirmare.</p>
+        <p class="summary-note">Plata cu cardul este procesată securizat prin Stripe. Livrarea se face prin curier, în România și internațional. Vei primi un email de confirmare.</p>
       </div>
     </aside>
   </main>
@@ -661,17 +665,25 @@
     const checked = document.querySelector('input[name="paymentMethod"]:checked');
     return checked ? checked.value : 'card';
   }
+  function getQuantity() {
+    const el = document.getElementById('quantity');
+    let q = el ? parseInt(el.value, 10) : 1;
+    if (!Number.isInteger(q) || q < 1) q = 1;
+    if (q > 20) q = 20;
+    return q;
+  }
   function updateSummary() {
     const product = getSelectedProduct();
     const productData = PRICES[product];
     const isPhysical = product === 'fizica';
+    const qty = getQuantity();
     const countryEl = document.getElementById('shippingCountry');
     const country = countryEl ? countryEl.value : 'RO';
     const shippingVal = isPhysical ? shippingForCountry(country) : 0;
-    const total = Math.round((productData.value + shippingVal) * 100) / 100;
+    const total = Math.round((productData.value * qty + shippingVal) * 100) / 100;
 
-    document.getElementById('sumProduct').textContent = productData.label + ' × 1';
-    document.getElementById('sumProductPrice').textContent = fmtPrice(productData.value) + ' RON';
+    document.getElementById('sumProduct').textContent = productData.label + ' × ' + qty;
+    document.getElementById('sumProductPrice').textContent = fmtPrice(productData.value * qty) + ' RON';
     document.getElementById('sumShipping').textContent = shippingVal === 0 ? 'Gratuit' : fmtPrice(shippingVal) + ' RON';
     document.getElementById('sumTotal').textContent = fmtPrice(total);
 
@@ -702,6 +714,13 @@
   // Recalculează transportul când se schimbă țara.
   const countrySelect = document.getElementById('shippingCountry');
   if (countrySelect) countrySelect.addEventListener('change', updateSummary);
+
+  // Recalculează la schimbarea cantității.
+  const quantityInput = document.getElementById('quantity');
+  if (quantityInput) {
+    quantityInput.addEventListener('input', updateSummary);
+    quantityInput.addEventListener('change', () => { quantityInput.value = getQuantity(); updateSummary(); });
+  }
 
   // ── Preselect product din ?product= ───────────────────────────
   const urlProduct = new URLSearchParams(location.search).get('product');
@@ -750,6 +769,7 @@
 
     const payload = {
       product: product,
+      quantity: getQuantity(),
       paymentMethod: getPaymentMethod(),
       customer: {
         name:  fd.get('customerName'),
