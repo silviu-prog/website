@@ -522,7 +522,7 @@
       <section class="form-section" id="shippingSection">
         <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
         <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
-          Livrăm prin curier, doar pe teritoriul <strong>României</strong>. Transport <strong>15 lei</strong>.
+          Livrăm prin curier, doar pe teritoriul <strong>României</strong>. Transport <strong>24,99 lei</strong>.
         </p>
         <div class="field-grid">
           <div class="field full">
@@ -571,12 +571,12 @@
         </div>
         <div class="summary-line">
           <span class="label">Livrare</span>
-          <span class="value" id="sumShipping">15 RON</span>
+          <span class="value" id="sumShipping">24,99 RON</span>
         </div>
 
         <div class="summary-total">
           <span class="label">Total</span>
-          <span><span class="value" id="sumTotal">60</span><span class="currency" id="sumCurrency">RON</span></span>
+          <span><span class="value" id="sumTotal">79,99</span><span class="currency" id="sumCurrency">RON</span></span>
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">Finalizează comanda</button>
@@ -591,7 +591,8 @@
   const PRICES = {
     fizica:    { value: 55, label: 'Carte fizică' }
   };
-  const SHIPPING = 15;
+  const SHIPPING = 24.99;
+  const fmtPrice = (n) => Number.isInteger(n) ? String(n) : n.toFixed(2).replace('.', ',');
 
   const form = document.getElementById('checkoutForm');
   const productCards = document.querySelectorAll('.product-card');
@@ -611,12 +612,12 @@
     const productData = PRICES[product];
     const isPhysical = product === 'fizica';
     const shippingVal = isPhysical ? SHIPPING : 0;
-    const total = productData.value + shippingVal;
+    const total = Math.round((productData.value + shippingVal) * 100) / 100;
 
     document.getElementById('sumProduct').textContent = productData.label + ' × 1';
-    document.getElementById('sumProductPrice').textContent = productData.value + ' RON';
-    document.getElementById('sumShipping').textContent = shippingVal === 0 ? 'Gratuit' : shippingVal + ' RON';
-    document.getElementById('sumTotal').textContent = total;
+    document.getElementById('sumProductPrice').textContent = fmtPrice(productData.value) + ' RON';
+    document.getElementById('sumShipping').textContent = shippingVal === 0 ? 'Gratuit' : fmtPrice(shippingVal) + ' RON';
+    document.getElementById('sumTotal').textContent = fmtPrice(total);
 
     shippingSection.style.display = isPhysical ? 'block' : 'none';
   }
