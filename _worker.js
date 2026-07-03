@@ -20,7 +20,7 @@ const PRODUCTS = {
   // Varianta digitală e dezactivată deocamdată.
 };
 // Transport pe zone (RON). Se poate ajusta oricând.
-const SHIPPING = { RO: 24.99, EU: 59, EUR_NON_EU: 79, WORLD: 119 };
+const SHIPPING = { RO: 24.99, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
 const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
 const EUR_NON_EU_COUNTRIES = ['CH','NO','GB']; // Elveția, Norvegia, UK
 const WORLD_COUNTRIES = ['US','CA','AU']; // SUA, Canada, Australia
