@@ -60,6 +60,9 @@ export default {
       if (pathname === '/api/admin/sameday/diagnostics' && request.method === 'GET') {
         return handleSamedayDiagnostics(request, env);
       }
+      if (pathname === '/api/admin/analytics' && request.method === 'GET') {
+        return handleAnalytics(request, env);
+      }
       const adminOrderMatch = pathname.match(/^\/api\/admin\/orders\/([A-Za-z0-9-]+)$/);
       if (adminOrderMatch && request.method === 'PATCH') {
         return handleUpdateOrder(request, env, adminOrderMatch[1]);
@@ -73,6 +76,17 @@ export default {
       }
     } catch (err) {
       return json({ success: false, error: 'Eroare server: ' + (err && err.message || err) }, 500);
+    }
+
+    // ── Contorizare vizite (pagini HTML, non-blocant) ───────────
+    if (request.method === 'GET' && !pathname.startsWith('/api')) {
+      const accept = request.headers.get('Accept') || '';
+      const ua = request.headers.get('User-Agent') || '';
+      const isPage = accept.includes('text/html') && !pathname.startsWith('/admin');
+      const isBot = /bot|crawl|spider|slurp|preview|facebookexternalhit|monitor|headless/i.test(ua);
+      if (isPage && !isBot) {
+        ctx.waitUntil(recordHit(env, pathname, (request.cf && request.cf.country) || null));
+      }
     }
 
     // ── Static assets ──────────────────────────────────────────
@@ -632,4 +646,58 @@ async function handleSamedayDiagnostics(request, env) {
   } catch (err) { out.pickupPointsError = err.message || String(err); }
 
   return json({ success: true, diagnostics: out });
+}
+
+// ────────────────────────────────────────────────────────────────
+// Analytics (vizite pagini)
+// ────────────────────────────────────────────────────────────────
+
+const RO_OFFSET = 3 * 3600; // secunde (+3h, ora României vara)
+
+async function ensureAnalytics(env) {
+  await env.DB.prepare(
+    'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT)'
+  ).run();
+  await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts)').run();
+}
+
+async function recordHit(env, path, country) {
+  if (!env.DB) return;
+  const ts = Date.now();
+  const insert = () => env.DB.prepare(
+    'INSERT INTO page_views (ts, path, country) VALUES (?, ?, ?)'
+  ).bind(ts, path.slice(0, 200), country).run();
+  try {
+    await insert();
+  } catch {
+    try { await ensureAnalytics(env); await insert(); } catch { /* ignore */ }
+  }
+}
+
+async function handleAnalytics(request, env) {
+  const unauth = requireAdmin(request, env);
+  if (unauth) return unauth;
+  if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
+
+  await ensureAnalytics(env);
+  const now = Date.now();
+
+  const bucketed = async (sinceMs, fmt) => {
+    const { results } = await env.DB.prepare(
+      `SELECT strftime('${fmt}', ts/1000 + ${RO_OFFSET}, 'unixepoch') AS bucket, COUNT(*) AS n
+       FROM page_views WHERE ts >= ? GROUP BY bucket ORDER BY bucket`
+    ).bind(sinceMs).all();
+    return (results || []).map(r => ({ bucket: r.bucket, n: r.n }));
+  };
+
+  const totalRow = await env.DB.prepare('SELECT COUNT(*) AS n FROM page_views').first();
+
+  const analytics = {
+    total:   (totalRow && totalRow.n) || 0,
+    perHour: await bucketed(now - 24 * 3600 * 1000,      '%Y-%m-%dT%H:00'),
+    perDay:  await bucketed(now - 30 * 24 * 3600 * 1000, '%Y-%m-%d'),
+    perWeek: await bucketed(now - 84 * 24 * 3600 * 1000, '%Y-W%W')
+  };
+
+  return json({ success: true, analytics });
 }

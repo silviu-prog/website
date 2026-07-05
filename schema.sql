@@ -50,3 +50,12 @@ CREATE TABLE IF NOT EXISTS app_kv (
   value      TEXT NOT NULL,
   expires_at INTEGER             -- epoch ms; NULL = fără expirare
 );
+
+-- Vizite pagini (analytics în panoul de admin)
+CREATE TABLE IF NOT EXISTS page_views (
+  id      INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts      INTEGER NOT NULL,      -- epoch ms
+  path    TEXT,
+  country TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts);
