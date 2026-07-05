@@ -480,9 +480,29 @@
   }
   .toast.visible { opacity: 1; transform: translateY(0); }
 
+  /* Analytics / Vizite */
+  .analytics-section { max-width: 1400px; margin: 0 auto; padding: 8px 32px 0; }
+  .analytics-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .analytics-head h2 { font-family: 'Cinzel', serif; color: var(--warm-brown); font-size: 1.3rem; font-weight: 700; }
+  .analytics-head .btn-icon { border-color: var(--border); color: var(--text-muted); }
+  .analytics-head .btn-icon:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .analytics-tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .a-tile { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
+  .a-tile .label { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+  .a-tile .value { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: var(--warm-brown); }
+  .chart-block { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
+  .chart-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 16px; }
+  .bars { display: flex; align-items: flex-end; gap: 3px; height: 150px; }
+  .bar-col { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; min-width: 0; }
+  .bar { width: 100%; max-width: 28px; background: linear-gradient(180deg, var(--gold-light), var(--gold)); border-radius: 3px 3px 0 0; min-height: 2px; }
+  .bar-col:hover .bar { background: linear-gradient(180deg, var(--gold), var(--gold-dark)); }
+  .bar-label { font-size: 0.58rem; color: var(--text-muted); margin-top: 6px; white-space: nowrap; height: 1em; }
+
   /* Responsive */
   @media (max-width: 900px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .analytics-tiles { grid-template-columns: repeat(2, 1fr); }
+    .analytics-section { padding: 8px 16px 0; }
     .toolbar { flex-direction: column; align-items: stretch; }
     .search-input { min-width: 0; width: 100%; }
     .orders-table { font-size: 0.9rem; }
@@ -524,6 +544,27 @@
   </header>
 
   <div class="stats-row" id="statsRow"></div>
+
+  <!-- ── Vizite site ─────────────────────────────────────────── -->
+  <section class="analytics-section" id="analyticsSection">
+    <div class="analytics-head">
+      <h2>📊 Vizite site</h2>
+      <button class="btn-icon" id="analyticsRefresh">↻ Reîncarcă</button>
+    </div>
+    <div class="analytics-tiles" id="analyticsTiles"></div>
+    <div class="chart-block">
+      <div class="chart-title">Pe oră — ultimele 24h</div>
+      <div class="bars" id="chartHour"></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Pe zi — ultimele 30 de zile</div>
+      <div class="bars" id="chartDay"></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Pe săptămână — ultimele 12 săptămâni</div>
+      <div class="bars" id="chartWeek"></div>
+    </div>
+  </section>
 
   <div class="toolbar">
     <h2 id="tableTitle">Toate comenzile</h2>
@@ -598,6 +639,76 @@
     document.getElementById('dashboard').classList.add('active');
     renderStats();
     renderOrders();
+    loadAnalytics();
+  }
+
+  // ── Analytics / Vizite ───────────────────────────────────────
+  const A_REFRESH = document.getElementById('analyticsRefresh');
+  if (A_REFRESH) A_REFRESH.addEventListener('click', loadAnalytics);
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+  // Cheie în ora României (+3h), la fel ca formatul din server.
+  function roShift(ms) { return new Date(ms + 3 * 3600 * 1000); }
+  function hourKey(ms) { const d = roShift(ms); return d.toISOString().slice(0, 13) + ':00'; }
+  function dayKey(ms)  { return roShift(ms).toISOString().slice(0, 10); }
+
+  async function loadAnalytics() {
+    try {
+      const r = await fetch('/api/admin/analytics', { headers: { 'X-Admin-Token': authToken } });
+      if (!r.ok) throw new Error();
+      const data = await r.json();
+      if (!data.success) throw new Error();
+      renderAnalytics(data.analytics);
+    } catch { /* silent */ }
+  }
+
+  function renderAnalytics(a) {
+    const now = Date.now();
+
+    // Serii cu goluri completate cu 0
+    const hourKeys = [];
+    for (let i = 23; i >= 0; i--) hourKeys.push(hourKey(now - i * 3600 * 1000));
+    const dayKeys = [];
+    for (let i = 29; i >= 0; i--) dayKeys.push(dayKey(now - i * 24 * 3600 * 1000));
+
+    const hourMap = {}; (a.perHour || []).forEach(x => hourMap[x.bucket] = x.n);
+    const dayMap  = {}; (a.perDay  || []).forEach(x => dayMap[x.bucket]  = x.n);
+
+    const hourSeries = hourKeys.map(k => ({ key: k, n: hourMap[k] || 0 }));
+    const daySeries  = dayKeys.map(k  => ({ key: k, n: dayMap[k]  || 0 }));
+    const weekSeries = (a.perWeek || []).map(x => ({ key: x.bucket, n: x.n }));
+
+    // Tiles
+    const today = dayKey(now);
+    const azi = dayMap[today] || 0;
+    const sum = (arr, from) => arr.slice(from).reduce((s, x) => s + x.n, 0);
+    const last7 = sum(daySeries, daySeries.length - 7);
+    const last30 = sum(daySeries, 0);
+    document.getElementById('analyticsTiles').innerHTML = `
+      <div class="a-tile"><div class="label">Azi</div><div class="value">${azi}</div></div>
+      <div class="a-tile"><div class="label">Ultimele 7 zile</div><div class="value">${last7}</div></div>
+      <div class="a-tile"><div class="label">Ultimele 30 zile</div><div class="value">${last30}</div></div>
+      <div class="a-tile"><div class="label">Total (all time)</div><div class="value">${a.total || 0}</div></div>
+    `;
+
+    renderBars('chartHour', hourSeries, (k) => k.slice(11, 16), 3);      // HH:00, etichetă la 3 ore
+    renderBars('chartDay',  daySeries,  (k) => k.slice(8) + '.' + k.slice(5, 7), 3); // DD.MM
+    renderBars('chartWeek', weekSeries, (k) => k.replace(/^\d{4}-/, ''), 1);         // W##
+  }
+
+  function renderBars(containerId, series, labelFn, labelEvery) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+    if (!series.length) { el.innerHTML = '<div style="color:var(--text-muted);font-style:italic;font-size:0.9rem;">Încă nu sunt date.</div>'; return; }
+    const max = Math.max(1, ...series.map(s => s.n));
+    el.innerHTML = series.map((s, i) => {
+      const h = Math.round((s.n / max) * 100);
+      const showLabel = (series.length - 1 - i) % labelEvery === 0;
+      return '<div class="bar-col" title="' + esc(labelFn(s.key, i)) + ': ' + s.n + ' vizite">' +
+               '<div class="bar" style="height:' + h + '%"></div>' +
+               '<div class="bar-label">' + (showLabel ? esc(labelFn(s.key, i)) : '') + '</div>' +
+             '</div>';
+    }).join('');
   }
 
   document.getElementById('logoutBtn').addEventListener('click', () => {
