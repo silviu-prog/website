@@ -193,7 +193,7 @@
     margin: 0 auto;
     padding: 32px 32px 8px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 16px;
   }
   .stat-card {
@@ -490,6 +490,7 @@
   .a-tile { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; }
   .a-tile .label { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
   .a-tile .value { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: var(--warm-brown); }
+  .a-tile .value small { font-family: 'EB Garamond', serif; font-size: 0.72rem; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
   .chart-block { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
   .chart-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 16px; }
   .bars { display: flex; align-items: flex-end; gap: 3px; height: 150px; }
@@ -544,6 +545,12 @@
   </header>
 
   <div class="stats-row" id="statsRow"></div>
+
+  <!-- ── Venituri ────────────────────────────────────────────── -->
+  <section class="analytics-section" id="revenueSection">
+    <div class="analytics-head"><h2>💰 Venituri</h2></div>
+    <div class="analytics-tiles" id="revenueTiles"></div>
+  </section>
 
   <!-- ── Vizite site ─────────────────────────────────────────── -->
   <section class="analytics-section" id="analyticsSection">
@@ -746,13 +753,33 @@
   });
 
   // ── Render stats ─────────────────────────────────────────────
+  function fmtLei(v) { return Math.round(v || 0).toLocaleString('ro-RO'); }
+  function roDayIndex(ms) { return Math.floor((ms + 3 * 3600 * 1000) / 86400000); }
+  function roMonthKey(ms) { return new Date(ms + 3 * 3600 * 1000).toISOString().slice(0, 7); }
+
   function renderStats() {
     const counts = { all: orders.length, new: 0, confirmed: 0, shipped: 0, delivered: 0 };
-    let totalRevenue = 0;
+
+    // Perioade (ora României)
+    const now = Date.now();
+    const nowIdx = roDayIndex(now);
+    const roNow = new Date(now + 3 * 3600 * 1000);
+    const weekStartIdx = nowIdx - ((roNow.getUTCDay() + 6) % 7); // luni = început de săptămână
+    const monthKey = roMonthKey(now);
+
+    let rTotal = 0, rToday = 0, rWeek = 0, rMonth = 0;
     orders.forEach(o => {
       if (counts[o.status] !== undefined) counts[o.status]++;
-      if (o.status !== 'cancelled') totalRevenue += o.total;
+      if (o.status === 'cancelled') return;
+      const val = Number(o.total) || 0;
+      rTotal += val;
+      const ms = new Date(o.created_at).getTime();
+      const idx = roDayIndex(ms);
+      if (idx === nowIdx) rToday += val;
+      if (idx >= weekStartIdx && idx <= nowIdx) rWeek += val;
+      if (roMonthKey(ms) === monthKey) rMonth += val;
     });
+
     const html = `
       <div class="stat-card clickable ${activeFilter==='all'?'active':''}" data-filter="all">
         <div class="label">Total comenzi</div>
@@ -770,10 +797,6 @@
         <div class="label">Expediate</div>
         <div class="value">${counts.shipped}</div>
       </div>
-      <div class="stat-card">
-        <div class="label">Venit total (active)</div>
-        <div class="value">${totalRevenue}<small>RON</small></div>
-      </div>
     `;
     const el = document.getElementById('statsRow');
     el.innerHTML = html;
@@ -784,6 +807,13 @@
         renderOrders();
       });
     });
+
+    document.getElementById('revenueTiles').innerHTML = `
+      <div class="a-tile"><div class="label">Venit azi</div><div class="value">${fmtLei(rToday)}<small>RON</small></div></div>
+      <div class="a-tile"><div class="label">Săptămâna curentă</div><div class="value">${fmtLei(rWeek)}<small>RON</small></div></div>
+      <div class="a-tile"><div class="label">Luna curentă</div><div class="value">${fmtLei(rMonth)}<small>RON</small></div></div>
+      <div class="a-tile"><div class="label">Venit total (active)</div><div class="value">${fmtLei(rTotal)}<small>RON</small></div></div>
+    `;
   }
 
   // ── Render orders table ──────────────────────────────────────
