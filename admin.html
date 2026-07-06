@@ -770,7 +770,7 @@
     let rTotal = 0, rToday = 0, rWeek = 0, rMonth = 0;
     orders.forEach(o => {
       if (counts[o.status] !== undefined) counts[o.status]++;
-      if (o.status === 'cancelled') return;
+      if (o.paymentStatus !== 'paid' || o.status === 'cancelled') return; // doar comenzile plătite
       const val = Number(o.total) || 0;
       rTotal += val;
       const ms = new Date(o.created_at).getTime();
@@ -812,7 +812,7 @@
       <div class="a-tile"><div class="label">Venit azi</div><div class="value">${fmtLei(rToday)}<small>RON</small></div></div>
       <div class="a-tile"><div class="label">Săptămâna curentă</div><div class="value">${fmtLei(rWeek)}<small>RON</small></div></div>
       <div class="a-tile"><div class="label">Luna curentă</div><div class="value">${fmtLei(rMonth)}<small>RON</small></div></div>
-      <div class="a-tile"><div class="label">Venit total (active)</div><div class="value">${fmtLei(rTotal)}<small>RON</small></div></div>
+      <div class="a-tile"><div class="label">Venit total (plătit)</div><div class="value">${fmtLei(rTotal)}<small>RON</small></div></div>
     `;
   }
 
