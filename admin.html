@@ -758,7 +758,7 @@
   function roMonthKey(ms) { return new Date(ms + 3 * 3600 * 1000).toISOString().slice(0, 7); }
 
   function renderStats() {
-    const counts = { all: orders.length, new: 0, confirmed: 0, shipped: 0, delivered: 0 };
+    const counts = { all: 0, new: 0, confirmed: 0, shipped: 0, delivered: 0 };
 
     // Perioade (ora României)
     const now = Date.now();
@@ -770,7 +770,8 @@
     let rTotal = 0, rToday = 0, rWeek = 0, rMonth = 0;
     orders.forEach(o => {
       if (counts[o.status] !== undefined) counts[o.status]++;
-      if (o.paymentStatus !== 'paid' || o.status === 'cancelled') return; // doar comenzile plătite
+      if (o.paymentStatus !== 'paid' || o.status === 'cancelled') return; // exclude anulate + plăți neconfirmate
+      counts.all++; // Total comenzi = doar cele plătite și neanulate
       const val = Number(o.total) || 0;
       rTotal += val;
       const ms = new Date(o.created_at).getTime();
