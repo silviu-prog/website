@@ -491,6 +491,9 @@
   .a-tile .label { font-family: 'Cinzel', serif; font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
   .a-tile .value { font-family: 'Cinzel', serif; font-size: 1.8rem; font-weight: 700; color: var(--warm-brown); }
   .a-tile .value small { font-family: 'EB Garamond', serif; font-size: 0.72rem; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+  .rev-sub { font-family: 'Cinzel', serif; font-size: 0.66rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin: 4px 0 10px; }
+  .a-tile.a-net { background: rgba(74,124,63,0.05); border-color: rgba(74,124,63,0.3); }
+  .a-tile.a-net .value { color: var(--status-delivered); }
   .chart-block { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
   .chart-title { font-family: 'Cinzel', serif; font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold-dark); margin-bottom: 16px; }
   .bars { display: flex; align-items: flex-end; gap: 3px; height: 150px; }
@@ -549,7 +552,10 @@
   <!-- ── Venituri ────────────────────────────────────────────── -->
   <section class="analytics-section" id="revenueSection">
     <div class="analytics-head"><h2>💰 Venituri</h2></div>
+    <div class="rev-sub">Brut (cu transport)</div>
     <div class="analytics-tiles" id="revenueTiles"></div>
+    <div class="rev-sub">Net (fără transport) — venitul tău din cărți</div>
+    <div class="analytics-tiles" id="revenueNetTiles"></div>
   </section>
 
   <!-- ── Vizite site ─────────────────────────────────────────── -->
@@ -767,18 +773,20 @@
     const weekStartIdx = nowIdx - ((roNow.getUTCDay() + 6) % 7); // luni = început de săptămână
     const monthKey = roMonthKey(now);
 
-    let rTotal = 0, rToday = 0, rWeek = 0, rMonth = 0;
+    let rTotal = 0, rToday = 0, rWeek = 0, rMonth = 0; // brut (cu transport)
+    let nTotal = 0, nToday = 0, nWeek = 0, nMonth = 0; // net (fără transport)
     orders.forEach(o => {
       if (counts[o.status] !== undefined) counts[o.status]++;
       if (o.paymentStatus !== 'paid' || o.status === 'cancelled') return; // exclude anulate + plăți neconfirmate
       counts.all++; // Total comenzi = doar cele plătite și neanulate
       const val = Number(o.total) || 0;
-      rTotal += val;
+      const net = val - (Number(o.shippingPrice) || 0); // scade transportul comenzii
       const ms = new Date(o.created_at).getTime();
       const idx = roDayIndex(ms);
-      if (idx === nowIdx) rToday += val;
-      if (idx >= weekStartIdx && idx <= nowIdx) rWeek += val;
-      if (roMonthKey(ms) === monthKey) rMonth += val;
+      rTotal += val; nTotal += net;
+      if (idx === nowIdx) { rToday += val; nToday += net; }
+      if (idx >= weekStartIdx && idx <= nowIdx) { rWeek += val; nWeek += net; }
+      if (roMonthKey(ms) === monthKey) { rMonth += val; nMonth += net; }
     });
 
     const html = `
@@ -814,6 +822,12 @@
       <div class="a-tile"><div class="label">Săptămâna curentă</div><div class="value">${fmtLei(rWeek)}<small>RON</small></div></div>
       <div class="a-tile"><div class="label">Luna curentă</div><div class="value">${fmtLei(rMonth)}<small>RON</small></div></div>
       <div class="a-tile"><div class="label">Venit total (plătit)</div><div class="value">${fmtLei(rTotal)}<small>RON</small></div></div>
+    `;
+    document.getElementById('revenueNetTiles').innerHTML = `
+      <div class="a-tile a-net"><div class="label">Net azi</div><div class="value">${fmtLei(nToday)}<small>RON</small></div></div>
+      <div class="a-tile a-net"><div class="label">Net săptămâna curentă</div><div class="value">${fmtLei(nWeek)}<small>RON</small></div></div>
+      <div class="a-tile a-net"><div class="label">Net luna curentă</div><div class="value">${fmtLei(nMonth)}<small>RON</small></div></div>
+      <div class="a-tile a-net"><div class="label">Net total</div><div class="value">${fmtLei(nTotal)}<small>RON</small></div></div>
     `;
   }
 
