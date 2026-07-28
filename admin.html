@@ -777,7 +777,7 @@
     let nTotal = 0, nToday = 0, nWeek = 0, nMonth = 0; // net (fără transport)
     orders.forEach(o => {
       if (counts[o.status] !== undefined) counts[o.status]++;
-      if (o.paymentStatus !== 'paid' || o.status === 'cancelled') return; // exclude anulate + plăți neconfirmate
+      if ((o.paymentStatus !== 'paid' && o.paymentStatus !== 'cod') || o.status === 'cancelled') return; // plătite + ramburs; exclude anulate și plăți neconfirmate
       counts.all++; // Total comenzi = doar cele plătite și neanulate
       const val = Number(o.total) || 0;
       const net = val - (Number(o.shippingPrice) || 0); // scade transportul comenzii

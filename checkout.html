@@ -524,9 +524,9 @@
 
       <!-- Step 3: Shipping address (only for physical) -->
       <section class="form-section" id="shippingSection">
-        <h2 class="section-heading"><span class="num">3</span> Adresa de livrare</h2>
+        <h2 class="section-heading"><span class="num">3</span> Livrare</h2>
         <p style="color:var(--text-muted);font-size:0.92rem;margin-bottom:18px;">
-          Livrăm prin curier în <strong>România</strong>, <strong>Uniunea Europeană</strong> și <strong>internațional</strong>. Transportul se calculează automat în funcție de țara aleasă.
+          Livrăm în <strong>România</strong> (curier la adresă sau <strong>Easybox</strong>), în <strong>UE</strong> și <strong>internațional</strong>. Transportul se calculează automat.
         </p>
         <div class="field-grid">
           <div class="field full">
@@ -573,6 +573,30 @@
               </optgroup>
             </select>
           </div>
+        </div>
+
+        <!-- Metodă de livrare (doar România) -->
+        <div class="shipping-options" id="deliveryMethods" style="display:none;">
+          <label class="shipping-card selected" data-delivery="address">
+            <input type="radio" name="deliveryMethod" value="address" checked />
+            <div>
+              <div class="label">🚚 Curier la adresă</div>
+              <div class="sublabel">Livrare prin curier direct la adresa ta.</div>
+            </div>
+            <div class="cost">24,99 lei</div>
+          </label>
+          <label class="shipping-card" data-delivery="easybox">
+            <input type="radio" name="deliveryMethod" value="easybox" />
+            <div>
+              <div class="label">📦 Easybox Sameday</div>
+              <div class="sublabel">Ridici din locker, oricând, cu cod.</div>
+            </div>
+            <div class="cost">18 lei</div>
+          </label>
+        </div>
+
+        <!-- Câmpuri adresă (curier la adresă) -->
+        <div class="field-grid" id="addressFields">
           <div class="field full">
             <label>Stradă, număr, bloc, apartament <span class="req">*</span></label>
             <input type="text" name="shippingAddress" autocomplete="street-address" placeholder="Ex: Str. Florilor 12, bl. A2, ap. 5" />
@@ -590,6 +614,25 @@
             <input type="text" name="shippingPostal" autocomplete="postal-code" placeholder="Ex: 400001" />
           </div>
         </div>
+
+        <!-- Easybox — locker dorit (câmp text) -->
+        <div id="lockerPicker" style="display:none;">
+          <div class="field-grid">
+            <div class="field">
+              <label>Localitate / Oraș <span class="req">*</span></label>
+              <input type="text" id="lockerCity" placeholder="Ex: Cluj-Napoca" />
+            </div>
+            <div class="field">
+              <label>Cod poștal</label>
+              <input type="text" id="lockerPostal" placeholder="Ex: 400001" />
+            </div>
+            <div class="field full">
+              <label>Lockerul Easybox dorit <span class="req">*</span></label>
+              <input type="text" id="lockerName" placeholder="Ex: Easybox Kaufland Mărăști, str. Aurel Vlaicu" />
+              <div style="font-size:0.82rem;color:var(--text-muted);margin-top:6px;">Scrie numele sau adresa lockerului Sameday Easybox de unde vrei să ridici coletul.</div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- Step 4: Payment -->
@@ -601,6 +644,13 @@
             <div>
               <div class="label">💳 Card online (Stripe)</div>
               <div class="sublabel">Plată securizată cu cardul. Vei fi redirecționat către Stripe.</div>
+            </div>
+          </label>
+          <label class="shipping-card" data-pay="ramburs" id="rambursCard" style="display:none;">
+            <input type="radio" name="paymentMethod" value="ramburs" />
+            <div>
+              <div class="label">💵 Ramburs (plata la livrare)</div>
+              <div class="sublabel">Plătești curierului la primire. Disponibil doar în România.</div>
             </div>
           </label>
         </div>
@@ -628,7 +678,7 @@
         </div>
 
         <button type="submit" class="btn-submit" id="submitBtn">Finalizează comanda</button>
-        <p class="summary-note">Plata cu cardul este procesată securizat prin Stripe. Livrarea se face prin curier, în România și internațional. Vei primi un email de confirmare.</p>
+        <p class="summary-note">Plată cu cardul (Stripe) sau ramburs (în România). Livrare prin curier sau Easybox în România, ori internațional. Vei primi un email de confirmare.</p>
       </div>
     </aside>
   </main>
@@ -639,7 +689,7 @@
   const PRICES = {
     fizica:    { value: 55, label: 'Carte fizică' }
   };
-  const SHIPPING = { RO: 24.99, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
+  const SHIPPING = { RO: 24.99, EASYBOX: 18, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
   const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
   const EUR_NON_EU_COUNTRIES = ['CH','NO','GB'];
   const WORLD_COUNTRIES = ['US','CA','AU'];
@@ -679,7 +729,11 @@
     const qty = getQuantity();
     const countryEl = document.getElementById('shippingCountry');
     const country = countryEl ? countryEl.value : 'RO';
-    const shippingVal = isPhysical ? shippingForCountry(country) : 0;
+    const delivery = getDeliveryMethod();
+    let shippingVal = 0;
+    if (isPhysical) {
+      shippingVal = (country === 'RO' && delivery === 'easybox') ? SHIPPING.EASYBOX : shippingForCountry(country);
+    }
     const total = Math.round((productData.value * qty + shippingVal) * 100) / 100;
 
     document.getElementById('sumProduct').textContent = productData.label + ' × ' + qty;
@@ -711,9 +765,48 @@
     card.addEventListener('click', () => selectPayment(card.dataset.pay));
   });
 
-  // Recalculează transportul când se schimbă țara.
+  // Recalculează transportul + reguli RO când se schimbă țara.
   const countrySelect = document.getElementById('shippingCountry');
-  if (countrySelect) countrySelect.addEventListener('change', updateSummary);
+  if (countrySelect) countrySelect.addEventListener('change', applyDeliveryUI);
+
+  // ── Livrare: metodă (curier/Easybox) + reguli RO ─────────────
+  const deliveryMethods = document.getElementById('deliveryMethods');
+  const addressFields   = document.getElementById('addressFields');
+  const lockerPicker    = document.getElementById('lockerPicker');
+  const rambursCard     = document.getElementById('rambursCard');
+  // Easybox activat — lockerul se specifică prin câmp text (fără API Sameday).
+  const EASYBOX_ENABLED = true;
+
+  function getDeliveryMethod() {
+    const checked = document.querySelector('input[name="deliveryMethod"]:checked');
+    return checked ? checked.value : 'address';
+  }
+  function selectDelivery(value) {
+    deliveryMethods.querySelectorAll('.shipping-card').forEach(c => {
+      const on = c.dataset.delivery === value;
+      c.classList.toggle('selected', on);
+      c.querySelector('input').checked = on;
+    });
+  }
+  function applyDeliveryUI() {
+    const isRO = (countrySelect ? countrySelect.value : 'RO') === 'RO';
+    deliveryMethods.style.display = (isRO && EASYBOX_ENABLED) ? 'grid' : 'none';
+    rambursCard.style.display = isRO ? 'flex' : 'none';
+    if (!isRO || !EASYBOX_ENABLED) selectDelivery('address');
+    if (!isRO) selectPayment('card');
+    const easybox = isRO && EASYBOX_ENABLED && getDeliveryMethod() === 'easybox';
+    addressFields.style.display = easybox ? 'none' : 'grid';
+    lockerPicker.style.display = easybox ? 'block' : 'none';
+    updateSummary();
+  }
+  deliveryMethods.querySelectorAll('.shipping-card').forEach(card => {
+    card.addEventListener('click', () => { selectDelivery(card.dataset.delivery); applyDeliveryUI(); });
+  });
+
+  // ── Easybox — câmpuri text pentru lockerul dorit ─────────────
+  const lockerCity   = document.getElementById('lockerCity');
+  const lockerPostal = document.getElementById('lockerPostal');
+  const lockerName   = document.getElementById('lockerName');
 
   // Recalculează la schimbarea cantității.
   const quantityInput = document.getElementById('quantity');
@@ -732,7 +825,7 @@
       target.querySelector('input').checked = true;
     }
   }
-  updateSummary();
+  applyDeliveryUI();
 
   // ── Submit handler ────────────────────────────────────────────
   const errorBox = document.getElementById('errorBox');
@@ -752,15 +845,27 @@
     const isPhysical = product === 'fizica';
     const fd = new FormData(form);
 
-    // Validare adresă (livrare fizică).
+    const country = fd.get('shippingCountry') || 'RO';
+    const isEasybox = isPhysical && country === 'RO' && getDeliveryMethod() === 'easybox';
+
+    // Validare livrare (fizică).
     if (isPhysical) {
-      const required = ['shippingAddress', 'shippingCity', 'shippingPostal'];
-      const missing = required.some(n => !String(fd.get(n) || '').trim());
-      if (missing) {
-        errorBox.textContent = 'Te rugăm completează adresa de livrare (stradă, localitate, cod poștal).';
-        errorBox.classList.add('visible');
-        shippingSection.scrollIntoView({ behavior: 'smooth' });
-        return;
+      if (isEasybox) {
+        if (!String(lockerCity.value || '').trim() || !String(lockerName.value || '').trim()) {
+          errorBox.textContent = 'Te rugăm completează localitatea și lockerul Easybox dorit.';
+          errorBox.classList.add('visible');
+          shippingSection.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+      } else {
+        const required = ['shippingAddress', 'shippingCity', 'shippingPostal'];
+        const missing = required.some(n => !String(fd.get(n) || '').trim());
+        if (missing) {
+          errorBox.textContent = 'Te rugăm completează adresa de livrare (stradă, localitate, cod poștal).';
+          errorBox.classList.add('visible');
+          shippingSection.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
       }
     }
 
@@ -770,6 +875,7 @@
     const payload = {
       product: product,
       quantity: getQuantity(),
+      deliveryMethod: isEasybox ? 'easybox' : 'address',
       paymentMethod: getPaymentMethod(),
       customer: {
         name:  fd.get('customerName'),
@@ -782,6 +888,11 @@
         city:    fd.get('shippingCity'),
         county:  fd.get('shippingCounty'),
         postal:  fd.get('shippingPostal')
+      } : null,
+      locker: isEasybox ? {
+        name:   lockerName.value,
+        city:   lockerCity.value,
+        postal: lockerPostal.value
       } : null
     };
 

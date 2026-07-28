@@ -20,7 +20,7 @@ const PRODUCTS = {
   // Varianta digitală e dezactivată deocamdată.
 };
 // Transport pe zone (RON). Se poate ajusta oricând.
-const SHIPPING = { RO: 24.99, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
+const SHIPPING = { RO: 24.99, EASYBOX: 18, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
 const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
 const EUR_NON_EU_COUNTRIES = ['CH','NO','GB']; // Elveția, Norvegia, UK
 const WORLD_COUNTRIES = ['US','CA','AU']; // SUA, Canada, Australia
@@ -195,20 +195,46 @@ async function handleCreateOrder(request, env) {
   if (!validString(c.phone, 50)) errors.push('Telefon invalid');
 
   const isPhysical = PRODUCTS[product] && PRODUCTS[product].physical;
-  // Plata exclusiv cu cardul (Stripe). Ramburs eliminat.
-  const paymentMethod = 'card';
 
-  // Adresă de livrare (România, UE sau internațional — SUA/UK/Canada).
+  // Metodă de livrare: 'address' (curier la adresă) sau 'easybox' (locker Sameday, doar RO).
+  const deliveryMethod = body.deliveryMethod === 'easybox' ? 'easybox' : 'address';
+  // Metodă de plată: 'card' (Stripe) sau 'ramburs' (COD, doar RO).
+  let paymentMethod = body.paymentMethod === 'ramburs' ? 'ramburs' : 'card';
+
   const sh = body.shipping || {};
+  const lk = body.locker || {};
   const country = isPhysical ? String(sh.country || 'RO').toUpperCase().slice(0, 2) : null;
+
   let shippingPrice = 0;
+  let lockerId = null, lockerName = null;
+  let shipAddress = null, shipCity = null, shipPostal = null, shipRegion = null;
+
   if (isPhysical) {
-    shippingPrice = shippingForCountry(country);
-    if (shippingPrice == null) { errors.push('Țară de livrare neacceptată'); shippingPrice = 0; }
-    if (!validString(sh.address, 300)) errors.push('Adresă invalidă');
-    if (!validString(sh.city, 120)) errors.push('Localitate invalidă');
-    if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid');
-    // Județ / stat / regiune — opțional (diferă de la o țară la alta).
+    // Easybox și ramburs sunt disponibile doar în România.
+    if (deliveryMethod === 'easybox' && country !== 'RO') errors.push('Easybox e disponibil doar în România');
+    if (paymentMethod === 'ramburs' && country !== 'RO') { errors.push('Ramburs e disponibil doar în România'); paymentMethod = 'card'; }
+
+    if (deliveryMethod === 'easybox' && country === 'RO') {
+      shippingPrice = SHIPPING.EASYBOX;
+      if (!validString(lk.name, 200)) errors.push('Specifică lockerul Easybox dorit');
+      if (!validString(lk.city, 120)) errors.push('Localitatea lockerului lipsește');
+      lockerId = validString(lk.id, 60) ? String(lk.id).trim() : null;
+      lockerName = validString(lk.name, 200) ? String(lk.name).trim() : null;
+      // Adresa de recipient pentru AWB = descrierea lockerului.
+      shipAddress = lockerName || 'Easybox';
+      shipCity = validString(lk.city, 120) ? String(lk.city).trim() : null;
+      shipPostal = validString(lk.postal, 30) ? String(lk.postal).trim() : null;
+    } else {
+      shippingPrice = shippingForCountry(country);
+      if (shippingPrice == null) { errors.push('Țară de livrare neacceptată'); shippingPrice = 0; }
+      if (!validString(sh.address, 300)) errors.push('Adresă invalidă');
+      if (!validString(sh.city, 120)) errors.push('Localitate invalidă');
+      if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid');
+      shipAddress = validString(sh.address, 300) ? sh.address.trim() : null;
+      shipCity = validString(sh.city, 120) ? sh.city.trim() : null;
+      shipPostal = validString(sh.postal, 30) ? sh.postal.trim() : null;
+      shipRegion = sh.county ? String(sh.county).trim() : null;
+    }
   }
   if (errors.length) return json({ success: false, error: errors.join('; ') }, 400);
 
@@ -224,9 +250,11 @@ async function handleCreateOrder(request, env) {
   const id = generateOrderId();
   const now = new Date().toISOString();
   const productLabel = PRODUCTS[product].label;
-  const shippingMethod = isPhysical ? 'Curier — livrare la adresă' : 'Livrare prin email';
-  const paymentLabel = 'Card online (Stripe)';
-  const paymentStatus = 'pending';
+  const shippingMethod = !isPhysical ? 'Livrare prin email'
+    : (deliveryMethod === 'easybox' ? ('Easybox — ' + (lockerName || '')) : 'Curier — livrare la adresă');
+  const isCod = paymentMethod === 'ramburs';
+  const paymentLabel = isCod ? 'Ramburs (plata la livrare)' : 'Card online (Stripe)';
+  const paymentStatus = isCod ? 'cod' : 'pending';
 
   await env.DB.prepare(`
     INSERT INTO orders (
@@ -235,22 +263,26 @@ async function handleCreateOrder(request, env) {
       shipping_method, payment_method, payment_status,
       customer_name, customer_email, customer_phone,
       shipping_country, shipping_address, shipping_city, shipping_postal, shipping_region,
+      locker_id, locker_name,
       notes
-    ) VALUES (?, ?, 'new', ?, ?, ?, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ) VALUES (?, ?, 'new', ?, ?, ?, ?, ?, ?, 'RON', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).bind(
     id, now,
     product, productLabel, quantity, unitPrice, shippingPrice, total,
     shippingMethod, paymentLabel, paymentStatus,
     c.name.trim(), c.email.trim().toLowerCase(), c.phone.trim(),
     isPhysical ? country : null,
-    isPhysical ? sh.address.trim() : null,
-    isPhysical ? sh.city.trim() : null,
-    isPhysical ? sh.postal.trim() : null,
-    isPhysical && sh.county ? String(sh.county).trim() : null,
+    shipAddress, shipCity, shipPostal, shipRegion,
+    lockerId, lockerName,
     validString(body.notes || '', 1000) ? body.notes.trim() : null
   ).run();
 
   const origin = siteOrigin(request, env);
+
+  // ── Ramburs → fără plată online; mergem direct la confirmare ──
+  if (isCod) {
+    return json({ success: true, orderId: id, redirectUrl: `/thank-you?id=${encodeURIComponent(id)}` });
+  }
 
   // ── Plata cu cardul → Stripe Checkout ────────────────────────
   try {
