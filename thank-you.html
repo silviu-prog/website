@@ -216,25 +216,54 @@
     const orderId = params.get('id');
     document.getElementById('orderId').textContent = orderId || '—';
 
+    const fmt = (n) => String(n).replace('.', ',');
+
     if (orderId) {
       fetch('/api/orders/' + encodeURIComponent(orderId))
         .then(r => r.json())
         .then(data => {
           if (!data || !data.success) return;
           const o = data.order;
+          const isEasybox = (o.shippingMethod || '').toLowerCase().includes('easybox');
+          const isCod = o.paymentStatus === 'cod';
+          const cur = o.currency || 'RON';
+          const totalStr = fmt(o.total) + ' ' + cur;
+
+          // ── Status ──
           const box = document.getElementById('statusBox');
           const val = document.getElementById('statusValue');
           box.style.display = 'block';
           const map = {
             paid: 'Plată confirmată ✓',
             pending: 'În așteptarea confirmării plății...',
-            cod: 'Ramburs — plătești la ridicare',
+            cod: 'Ramburs — plătești ' + totalStr + ' la ' + (isEasybox ? 'ridicare' : 'livrare'),
             failed: 'Plata nu a fost finalizată'
           };
           val.textContent = map[o.paymentStatus] || o.paymentStatus || '—';
-          if (o.awbNumber) {
-            val.textContent += ' · AWB Sameday: ' + o.awbNumber;
+          if (o.awbNumber) val.textContent += ' · AWB: ' + o.awbNumber;
+
+          // ── Text principal ──
+          const lead = document.querySelector('.lead');
+          if (isCod) {
+            lead.innerHTML = 'Comanda ta a fost înregistrată! Vei plăti <strong>' + totalStr + '</strong> ' +
+              (isEasybox ? 'la ridicarea coletului din Easybox' : 'la livrare, direct curierului') +
+              ' (ramburs). Îți trimitem un email de confirmare.';
+          } else if (o.paymentStatus === 'paid') {
+            lead.textContent = 'Plata a fost confirmată. Îți pregătim coletul și îl expediem în cel mai scurt timp.';
           }
+
+          // ── Ce urmează (adaptat livrare + plată) ──
+          const steps = ['Vei primi un email de confirmare în scurt timp'];
+          steps.push(isEasybox
+            ? 'Pregătim coletul și îl trimitem la lockerul Easybox ales; primești codul de ridicare pe email/SMS'
+            : 'Pregătim coletul și îl trimitem prin curier la adresa ta');
+          if (isCod) {
+            steps.push('Plătești <strong>' + totalStr + '</strong> ' +
+              (isEasybox ? 'la ridicarea din locker' : 'curierului, la primire') + ' (ramburs)');
+          }
+          steps.push('Primești numărul AWB pe email; livrare în 2–5 zile lucrătoare în România (mai mult în UE / internațional)');
+          steps.push('Pentru orice întrebare: scrie la <a href="mailto:contact@yeshuabook.com" style="color:var(--gold-light)">contact@yeshuabook.com</a>');
+          document.getElementById('nextSteps').innerHTML = steps.map(s => '<li>' + s + '</li>').join('');
         })
         .catch(() => {});
     }
