@@ -606,11 +606,11 @@
             <input type="text" name="shippingCity" autocomplete="address-level2" placeholder="Ex: Cluj-Napoca" />
           </div>
           <div class="field">
-            <label>Județ / Stat / Regiune</label>
+            <label>Județ / Stat / Regiune <span class="req" id="countyReq">*</span></label>
             <input type="text" name="shippingCounty" autocomplete="address-level1" placeholder="Ex: Cluj" />
           </div>
           <div class="field">
-            <label>Cod poștal <span class="req">*</span></label>
+            <label>Cod poștal <span class="req" id="postalReq" style="display:none;">*</span></label>
             <input type="text" name="shippingPostal" autocomplete="postal-code" placeholder="Ex: 400001" />
           </div>
         </div>
@@ -797,6 +797,11 @@
     const easybox = isRO && EASYBOX_ENABLED && getDeliveryMethod() === 'easybox';
     addressFields.style.display = easybox ? 'none' : 'grid';
     lockerPicker.style.display = easybox ? 'block' : 'none';
+    // Obligatoriu în funcție de țară: RO → județ, internațional → cod poștal
+    const countyReq = document.getElementById('countyReq');
+    const postalReq = document.getElementById('postalReq');
+    if (countyReq) countyReq.style.display = isRO ? 'inline' : 'none';
+    if (postalReq) postalReq.style.display = isRO ? 'none' : 'inline';
     updateSummary();
   }
   deliveryMethods.querySelectorAll('.shipping-card').forEach(card => {
@@ -858,10 +863,12 @@
           return;
         }
       } else {
-        const required = ['shippingAddress', 'shippingCity', 'shippingPostal'];
+        const required = ['shippingAddress', 'shippingCity', (country === 'RO' ? 'shippingCounty' : 'shippingPostal')];
         const missing = required.some(n => !String(fd.get(n) || '').trim());
         if (missing) {
-          errorBox.textContent = 'Te rugăm completează adresa de livrare (stradă, localitate, cod poștal).';
+          errorBox.textContent = country === 'RO'
+            ? 'Te rugăm completează adresa (stradă, localitate, județ).'
+            : 'Te rugăm completează adresa (stradă, localitate, cod poștal).';
           errorBox.classList.add('visible');
           shippingSection.scrollIntoView({ behavior: 'smooth' });
           return;

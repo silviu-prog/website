@@ -229,7 +229,11 @@ async function handleCreateOrder(request, env) {
       if (shippingPrice == null) { errors.push('Țară de livrare neacceptată'); shippingPrice = 0; }
       if (!validString(sh.address, 300)) errors.push('Adresă invalidă');
       if (!validString(sh.city, 120)) errors.push('Localitate invalidă');
-      if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid');
+      if (country === 'RO') {
+        if (!validString(sh.county, 120)) errors.push('Județ invalid'); // RO: județul e necesar pentru curier
+      } else {
+        if (!validString(sh.postal, 30)) errors.push('Cod poștal invalid'); // internațional: cod poștal necesar
+      }
       shipAddress = validString(sh.address, 300) ? sh.address.trim() : null;
       shipCity = validString(sh.city, 120) ? sh.city.trim() : null;
       shipPostal = validString(sh.postal, 30) ? sh.postal.trim() : null;
