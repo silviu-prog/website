@@ -24,6 +24,7 @@ const SHIPPING = { RO: 24.99, EASYBOX: 18, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
 const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
 const EUR_NON_EU_COUNTRIES = ['CH','NO','GB']; // Elveția, Norvegia, UK
 const WORLD_COUNTRIES = ['US','CA','AU']; // SUA, Canada, Australia
+const RAMBURS_FEE = 2; // RON — taxă de procesare la plata ramburs
 function shippingForCountry(cc) {
   if (cc === 'RO') return SHIPPING.RO;
   if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
@@ -249,7 +250,8 @@ async function handleCreateOrder(request, env) {
 
   // ── Prețuri (autoritativ, din server) ────────────────────────
   const unitPrice = PRODUCTS[product].price;
-  const total = Math.round((unitPrice * quantity + shippingPrice) * 100) / 100;
+  const rambursFee = paymentMethod === 'ramburs' ? RAMBURS_FEE : 0;
+  const total = Math.round((unitPrice * quantity + shippingPrice + rambursFee) * 100) / 100;
 
   const id = generateOrderId();
   const now = new Date().toISOString();

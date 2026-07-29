@@ -650,7 +650,7 @@
             <input type="radio" name="paymentMethod" value="ramburs" />
             <div>
               <div class="label">💵 Ramburs (plata la livrare)</div>
-              <div class="sublabel">Plătești curierului la primire. Disponibil doar în România.</div>
+              <div class="sublabel">Plătești la primire. Doar în România. Taxă de procesare +2 lei.</div>
             </div>
           </label>
         </div>
@@ -671,6 +671,10 @@
           <span class="label">Livrare</span>
           <span class="value" id="sumShipping">24,99 RON</span>
         </div>
+        <div class="summary-line" id="rambursLine" style="display:none;">
+          <span class="label">Taxă ramburs</span>
+          <span class="value" id="sumRamburs">2 RON</span>
+        </div>
 
         <div class="summary-total">
           <span class="label">Total</span>
@@ -690,6 +694,7 @@
     fizica:    { value: 55, label: 'Carte fizică' }
   };
   const SHIPPING = { RO: 24.99, EASYBOX: 18, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
+  const RAMBURS_FEE = 2; // taxă procesare ramburs
   const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
   const EUR_NON_EU_COUNTRIES = ['CH','NO','GB'];
   const WORLD_COUNTRIES = ['US','CA','AU'];
@@ -734,11 +739,17 @@
     if (isPhysical) {
       shippingVal = (country === 'RO' && delivery === 'easybox') ? SHIPPING.EASYBOX : shippingForCountry(country);
     }
-    const total = Math.round((productData.value * qty + shippingVal) * 100) / 100;
+    const rambursFee = (isPhysical && getPaymentMethod() === 'ramburs') ? RAMBURS_FEE : 0;
+    const total = Math.round((productData.value * qty + shippingVal + rambursFee) * 100) / 100;
 
     document.getElementById('sumProduct').textContent = productData.label + ' × ' + qty;
     document.getElementById('sumProductPrice').textContent = fmtPrice(productData.value * qty) + ' RON';
     document.getElementById('sumShipping').textContent = shippingVal === 0 ? 'Gratuit' : fmtPrice(shippingVal) + ' RON';
+    const rambursLine = document.getElementById('rambursLine');
+    if (rambursLine) {
+      rambursLine.style.display = rambursFee > 0 ? '' : 'none';
+      document.getElementById('sumRamburs').textContent = fmtPrice(rambursFee) + ' RON';
+    }
     document.getElementById('sumTotal').textContent = fmtPrice(total);
 
     shippingSection.style.display = isPhysical ? 'block' : 'none';
@@ -762,7 +773,7 @@
     });
   }
   paymentOptions.querySelectorAll('.shipping-card').forEach(card => {
-    card.addEventListener('click', () => selectPayment(card.dataset.pay));
+    card.addEventListener('click', () => { selectPayment(card.dataset.pay); updateSummary(); });
   });
 
   // Recalculează transportul + reguli RO când se schimbă țara.
