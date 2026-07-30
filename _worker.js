@@ -67,6 +67,9 @@ export default {
       if (pathname === '/api/admin/analytics/purge' && request.method === 'POST') {
         return handlePurgeAnalytics(request, env);
       }
+      if (pathname === '/api/admin/analytics/diag' && request.method === 'GET') {
+        return handleAnalyticsDiag(request, env);
+      }
       const adminOrderMatch = pathname.match(/^\/api\/admin\/orders\/([A-Za-z0-9-]+)$/);
       if (adminOrderMatch && request.method === 'PATCH') {
         return handleUpdateOrder(request, env, adminOrderMatch[1]);
@@ -86,8 +89,9 @@ export default {
     if (request.method === 'GET' && !pathname.startsWith('/api')) {
       const accept = request.headers.get('Accept') || '';
       const ua = request.headers.get('User-Agent') || '';
-      const isJunk = /wp-|xmlrpc|\.php|\.env|\.git|\.aspx|\/vendor\//i.test(pathname);
-      const isPage = accept.includes('text/html') && !pathname.startsWith('/admin') && !isJunk;
+      // Listă albă: numărăm doar paginile reale (restul = scanere/boți).
+      const p = pathname !== '/' ? pathname.replace(/\/+$/, '') : '/';
+      const isPage = accept.includes('text/html') && ['/', '/checkout', '/thank-you'].includes(p);
       const isBot = /bot|crawl|spider|slurp|preview|facebookexternalhit|monitor|headless/i.test(ua);
       if (isPage && !isBot) {
         const source = classifySource(request.headers.get('Referer') || '', url.hostname);
@@ -773,9 +777,34 @@ async function handlePurgeAnalytics(request, env) {
   if (unauth) return unauth;
   if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
   await ensureAnalytics(env);
-  const res = await env.DB.prepare(
-    "DELETE FROM page_views WHERE path LIKE '%wp-%' OR path LIKE '%.php%' OR path LIKE '%.env%' OR path LIKE '%.git%' OR path LIKE '%.aspx%' OR path LIKE '%.cgi%' OR path LIKE '%/vendor/%' OR path LIKE '%xmlrpc%'"
+  // 1) Șterge tot ce nu e o pagină reală (scanere, robots.txt, favicon, config etc.)
+  const r1 = await env.DB.prepare(
+    "DELETE FROM page_views WHERE path NOT IN ('/', '/checkout', '/thank-you', '/checkout/', '/thank-you/')"
   ).run();
-  const deleted = (res.meta && res.meta.changes) || 0;
+  // 2) Șterge rafalele (>3 vizite în aceeași secundă = boți)
+  const r2 = await env.DB.prepare(
+    "DELETE FROM page_views WHERE (ts/1000) IN (SELECT ts/1000 FROM page_views GROUP BY ts/1000 HAVING COUNT(*) > 3)"
+  ).run();
+  const deleted = ((r1.meta && r1.meta.changes) || 0) + ((r2.meta && r2.meta.changes) || 0);
   return json({ success: true, deleted });
+}
+
+// Diagnostic: identifică tipare de boți în vizitele rămase.
+async function handleAnalyticsDiag(request, env) {
+  const unauth = requireAdmin(request, env);
+  if (unauth) return unauth;
+  if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
+  await ensureAnalytics(env);
+  const q = async (sql) => ((await env.DB.prepare(sql).all()).results) || [];
+  const one = async (sql) => (await env.DB.prepare(sql).first()) || {};
+
+  const total = (await one('SELECT COUNT(*) AS n FROM page_views')).n || 0;
+  const byCountry = await q("SELECT COALESCE(country,'?') AS k, COUNT(*) AS n FROM page_views GROUP BY k ORDER BY n DESC LIMIT 15");
+  const byPath = await q("SELECT COALESCE(path,'?') AS k, COUNT(*) AS n FROM page_views GROUP BY k ORDER BY n DESC LIMIT 15");
+  const bySource = await q("SELECT COALESCE(source,'direct') AS k, COUNT(*) AS n FROM page_views GROUP BY k ORDER BY n DESC LIMIT 15");
+  // Rafale: secunde cu >3 vizite (imposibil pentru un om) → boți
+  const burstSeconds = await q("SELECT ts/1000 AS sec, COUNT(*) AS n, COALESCE(country,'?') AS country FROM page_views GROUP BY sec HAVING n > 3 ORDER BY n DESC LIMIT 15");
+  const burstTotal = (await one("SELECT COALESCE(SUM(n),0) AS tot FROM (SELECT COUNT(*) AS n FROM page_views GROUP BY ts/1000 HAVING n > 3)")).tot || 0;
+
+  return json({ success: true, total, byCountry, byPath, bySource, burstSeconds, burstTotal });
 }
