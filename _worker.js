@@ -64,6 +64,9 @@ export default {
       if (pathname === '/api/admin/analytics' && request.method === 'GET') {
         return handleAnalytics(request, env);
       }
+      if (pathname === '/api/admin/analytics/purge' && request.method === 'POST') {
+        return handlePurgeAnalytics(request, env);
+      }
       const adminOrderMatch = pathname.match(/^\/api\/admin\/orders\/([A-Za-z0-9-]+)$/);
       if (adminOrderMatch && request.method === 'PATCH') {
         return handleUpdateOrder(request, env, adminOrderMatch[1]);
@@ -762,4 +765,17 @@ async function handleAnalytics(request, env) {
   analytics.sources = (sourcesRes.results || []).map(r => ({ source: r.source, n: r.n }));
 
   return json({ success: true, analytics });
+}
+
+// Șterge vizitele-gunoi (scanere de vulnerabilități: căi WordPress/PHP etc.).
+async function handlePurgeAnalytics(request, env) {
+  const unauth = requireAdmin(request, env);
+  if (unauth) return unauth;
+  if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
+  await ensureAnalytics(env);
+  const res = await env.DB.prepare(
+    "DELETE FROM page_views WHERE path LIKE '%wp-%' OR path LIKE '%.php%' OR path LIKE '%.env%' OR path LIKE '%.git%' OR path LIKE '%.aspx%' OR path LIKE '%.cgi%' OR path LIKE '%/vendor/%' OR path LIKE '%xmlrpc%'"
+  ).run();
+  const deleted = (res.meta && res.meta.changes) || 0;
+  return json({ success: true, deleted });
 }
