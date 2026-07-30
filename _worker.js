@@ -25,6 +25,10 @@ const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR
 const EUR_NON_EU_COUNTRIES = ['CH','NO','GB']; // Elveția, Norvegia, UK
 const WORLD_COUNTRIES = ['US','CA','AU']; // SUA, Canada, Australia
 const RAMBURS_FEE = 2; // RON — taxă de procesare la plata ramburs
+// Țări fără audiență pentru o carte în română — trafic de boți/data-center. Nu le contorizăm.
+const BOT_COUNTRIES = ['CN','HK','SG','JP','KR','TW','IN','VN','TH','ID','PH','MY','RU'];
+// Expresie SQL pentru „vizitatori unici": deduplică pe ip_hash; rândurile vechi (fără hash) contează individual.
+const UNIQ_SQL = "COUNT(DISTINCT COALESCE(ip_hash, 'id' || id))";
 function shippingForCountry(cc) {
   if (cc === 'RO') return SHIPPING.RO;
   if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
@@ -91,11 +95,14 @@ export default {
       const ua = request.headers.get('User-Agent') || '';
       // Listă albă: numărăm doar paginile reale (restul = scanere/boți).
       const p = pathname !== '/' ? pathname.replace(/\/+$/, '') : '/';
+      const country = (request.cf && request.cf.country) || null;
       const isPage = accept.includes('text/html') && ['/', '/checkout', '/thank-you'].includes(p);
       const isBot = /bot|crawl|spider|slurp|preview|facebookexternalhit|monitor|headless/i.test(ua);
-      if (isPage && !isBot) {
+      const isBotCountry = country && BOT_COUNTRIES.includes(country);
+      if (isPage && !isBot && !isBotCountry) {
         const source = classifySource(request.headers.get('Referer') || '', url.hostname);
-        ctx.waitUntil(recordHit(env, pathname, (request.cf && request.cf.country) || null, source));
+        const ipHash = hashIp(request.headers.get('CF-Connecting-IP') || '');
+        ctx.waitUntil(recordHit(env, pathname, country, source, ipHash));
       }
     }
 
@@ -703,11 +710,20 @@ const RO_OFFSET = 3 * 3600; // secunde (+3h, ora României vara)
 
 async function ensureAnalytics(env) {
   await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT, source TEXT)'
+    'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT, source TEXT, ip_hash TEXT)'
   ).run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts)').run();
-  // Coloana source poate lipsi pe tabele mai vechi.
+  // Coloane care pot lipsi pe tabele mai vechi.
   try { await env.DB.prepare('ALTER TABLE page_views ADD COLUMN source TEXT').run(); } catch { /* există deja */ }
+  try { await env.DB.prepare('ALTER TABLE page_views ADD COLUMN ip_hash TEXT').run(); } catch { /* există deja */ }
+}
+
+// Hash rapid, nereversibil practic, pentru deduplicarea vizitatorilor (fără a stoca IP-ul).
+function hashIp(ip) {
+  let h = 2166136261 >>> 0;
+  const s = 'yshv1|' + (ip || '');
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  return h.toString(36);
 }
 
 // Clasifică sursa vizitei din header-ul Referer.
@@ -720,12 +736,12 @@ function classifySource(referer, siteHost) {
   } catch { return 'other'; }
 }
 
-async function recordHit(env, path, country, source) {
+async function recordHit(env, path, country, source, ipHash) {
   if (!env.DB) return;
   const ts = Date.now();
   const insert = () => env.DB.prepare(
-    'INSERT INTO page_views (ts, path, country, source) VALUES (?, ?, ?, ?)'
-  ).bind(ts, path.slice(0, 200), country, source || 'direct').run();
+    'INSERT INTO page_views (ts, path, country, source, ip_hash) VALUES (?, ?, ?, ?, ?)'
+  ).bind(ts, path.slice(0, 200), country, source || 'direct', ipHash || null).run();
   try {
     await insert();
   } catch {
@@ -743,13 +759,13 @@ async function handleAnalytics(request, env) {
 
   const bucketed = async (sinceMs, fmt) => {
     const { results } = await env.DB.prepare(
-      `SELECT strftime('${fmt}', ts/1000 + ${RO_OFFSET}, 'unixepoch') AS bucket, COUNT(*) AS n
+      `SELECT strftime('${fmt}', ts/1000 + ${RO_OFFSET}, 'unixepoch') AS bucket, ${UNIQ_SQL} AS n
        FROM page_views WHERE ts >= ? GROUP BY bucket ORDER BY bucket`
     ).bind(sinceMs).all();
     return (results || []).map(r => ({ bucket: r.bucket, n: r.n }));
   };
 
-  const totalRow = await env.DB.prepare('SELECT COUNT(*) AS n FROM page_views').first();
+  const totalRow = await env.DB.prepare(`SELECT ${UNIQ_SQL} AS n FROM page_views`).first();
 
   const analytics = {
     total:   (totalRow && totalRow.n) || 0,
@@ -763,7 +779,7 @@ async function handleAnalytics(request, env) {
     'SELECT ts, path, source, country FROM page_views ORDER BY ts DESC LIMIT 60'
   ).all();
   const sourcesRes = await env.DB.prepare(
-    "SELECT COALESCE(source,'direct') AS source, COUNT(*) AS n FROM page_views WHERE ts >= ? GROUP BY COALESCE(source,'direct') ORDER BY n DESC LIMIT 15"
+    `SELECT COALESCE(source,'direct') AS source, ${UNIQ_SQL} AS n FROM page_views WHERE ts >= ? GROUP BY COALESCE(source,'direct') ORDER BY n DESC LIMIT 15`
   ).bind(now - 30 * 24 * 3600 * 1000).all();
   analytics.recent  = (recentRes.results  || []).map(r => ({ ts: r.ts, path: r.path, source: r.source, country: r.country }));
   analytics.sources = (sourcesRes.results || []).map(r => ({ source: r.source, n: r.n }));
@@ -785,7 +801,10 @@ async function handlePurgeAnalytics(request, env) {
   const r2 = await env.DB.prepare(
     "DELETE FROM page_views WHERE (ts/1000) IN (SELECT ts/1000 FROM page_views GROUP BY ts/1000 HAVING COUNT(*) > 3)"
   ).run();
-  const deleted = ((r1.meta && r1.meta.changes) || 0) + ((r2.meta && r2.meta.changes) || 0);
+  // 3) Șterge traficul din țări fără audiență RO (data-center/boți)
+  const ph = BOT_COUNTRIES.map(() => '?').join(',');
+  const r3 = await env.DB.prepare(`DELETE FROM page_views WHERE country IN (${ph})`).bind(...BOT_COUNTRIES).run();
+  const deleted = ((r1.meta && r1.meta.changes) || 0) + ((r2.meta && r2.meta.changes) || 0) + ((r3.meta && r3.meta.changes) || 0);
   return json({ success: true, deleted });
 }
 
