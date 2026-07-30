@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS page_views (
   id      INTEGER PRIMARY KEY AUTOINCREMENT,
   ts      INTEGER NOT NULL,      -- epoch ms
   path    TEXT,
-  country TEXT
+  country TEXT,
+  source  TEXT                   -- sursa vizitei (referrer normalizat)
 );
 CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts);

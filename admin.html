@@ -502,6 +502,22 @@
   .bar-col:hover .bar { background: linear-gradient(180deg, var(--gold), var(--gold-dark)); }
   .bar-label { font-size: 0.58rem; color: var(--text-muted); margin-top: 6px; white-space: nowrap; height: 1em; }
 
+  /* Sursa vizitelor */
+  .source-breakdown { display: flex; flex-direction: column; gap: 9px; }
+  .source-row { display: flex; align-items: center; gap: 12px; }
+  .source-row .sname { min-width: 150px; max-width: 150px; font-weight: 600; color: var(--warm-brown); font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .source-row .sbar { flex: 1; height: 18px; background: rgba(196,146,42,0.1); border-radius: 4px; overflow: hidden; }
+  .source-row .sbar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--gold-light), var(--gold)); }
+  .source-row .scount { min-width: 46px; text-align: right; font-family: 'Cinzel', serif; font-weight: 700; color: var(--warm-brown); font-size: 0.9rem; }
+  .recent-wrap { max-height: 380px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+  .recent-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  .recent-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .recent-table tr:last-child td { border-bottom: none; }
+  .recent-table td.rt-time { color: var(--text-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .recent-table td.rt-source { font-weight: 600; color: var(--warm-brown); }
+  .recent-table td.rt-path { color: var(--text-muted); }
+  @media (max-width: 900px) { .source-row .sname { min-width: 100px; max-width: 100px; } .recent-table td.rt-path { display: none; } }
+
   /* Responsive */
   @media (max-width: 900px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -587,6 +603,19 @@
   <div class="table-wrap">
     <div id="ordersContainer"></div>
   </div>
+
+  <!-- ── Sursa vizitelor (jos) ────────────────────────────────── -->
+  <section class="analytics-section" id="visitSourceSection">
+    <div class="analytics-head"><h2>🌐 Sursa vizitelor</h2></div>
+    <div class="chart-block">
+      <div class="chart-title">De unde vin vizitatorii — ultimele 30 de zile</div>
+      <div id="sourceBreakdown" class="source-breakdown"></div>
+    </div>
+    <div class="chart-block">
+      <div class="chart-title">Vizite recente — oră și sursă</div>
+      <div class="recent-wrap"><table class="recent-table"><tbody id="recentVisits"></tbody></table></div>
+    </div>
+  </section>
 </div>
 
 <!-- ── Order Detail Modal ──────────────────────────────────── -->
@@ -707,6 +736,52 @@
     renderBars('chartHour', hourSeries, (k) => k.slice(11, 16), 3);      // HH:00, etichetă la 3 ore
     renderBars('chartDay',  daySeries,  (k) => k.slice(8) + '.' + k.slice(5, 7), 3); // DD.MM
     renderBars('chartWeek', weekSeries, (k) => k.replace(/^\d{4}-/, ''), 1);         // W##
+
+    renderSources(a.sources || []);
+    renderRecent(a.recent || []);
+  }
+
+  function sourceLabel(s) {
+    if (!s || s === 'direct') return 'Direct (link direct / typed)';
+    if (s === 'internal') return 'Navigare pe site';
+    if (s === 'other') return 'Altă sursă';
+    const map = {
+      'google.com':'Google','google.ro':'Google',
+      'facebook.com':'Facebook','m.facebook.com':'Facebook','l.facebook.com':'Facebook','lm.facebook.com':'Facebook',
+      'instagram.com':'Instagram','l.instagram.com':'Instagram',
+      't.co':'X / Twitter','x.com':'X / Twitter','twitter.com':'X / Twitter',
+      'youtube.com':'YouTube','m.youtube.com':'YouTube',
+      'tiktok.com':'TikTok','bing.com':'Bing','duckduckgo.com':'DuckDuckGo',
+      'yahoo.com':'Yahoo','linkedin.com':'LinkedIn','reddit.com':'Reddit'
+    };
+    return map[s] || s;
+  }
+
+  function renderSources(sources) {
+    const el = document.getElementById('sourceBreakdown');
+    if (!el) return;
+    if (!sources.length) { el.innerHTML = '<div style="color:var(--text-muted);font-style:italic;">Încă nu sunt date.</div>'; return; }
+    const max = Math.max(1, ...sources.map(s => s.n));
+    el.innerHTML = sources.map(s => {
+      const w = Math.round((s.n / max) * 100);
+      const label = esc(sourceLabel(s.source));
+      return '<div class="source-row"><div class="sname" title="' + label + '">' + label + '</div>' +
+             '<div class="sbar"><span style="width:' + w + '%"></span></div>' +
+             '<div class="scount">' + s.n + '</div></div>';
+    }).join('');
+  }
+
+  function renderRecent(recent) {
+    const el = document.getElementById('recentVisits');
+    if (!el) return;
+    if (!recent.length) { el.innerHTML = '<tr><td style="color:var(--text-muted);font-style:italic;padding:12px;">Încă nu sunt vizite.</td></tr>'; return; }
+    el.innerHTML = recent.map(v => {
+      const d = new Date(v.ts + 3 * 3600 * 1000); // ora României
+      const t = pad2(d.getUTCDate()) + '.' + pad2(d.getUTCMonth() + 1) + ' ' + pad2(d.getUTCHours()) + ':' + pad2(d.getUTCMinutes());
+      return '<tr><td class="rt-time">' + t + '</td>' +
+             '<td class="rt-source">' + esc(sourceLabel(v.source)) + '</td>' +
+             '<td class="rt-path">' + esc(v.path || '') + (v.country ? ' · ' + esc(v.country) : '') + '</td></tr>';
+    }).join('');
   }
 
   function renderBars(containerId, series, labelFn, labelEvery) {
