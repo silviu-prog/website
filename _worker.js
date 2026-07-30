@@ -713,6 +713,7 @@ async function ensureAnalytics(env) {
     'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT, source TEXT, ip_hash TEXT)'
   ).run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts)').run();
+  try { await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_views_ip ON page_views(ip_hash)').run(); } catch { /* coloana poate lipsi încă */ }
   // Coloane care pot lipsi pe tabele mai vechi.
   try { await env.DB.prepare('ALTER TABLE page_views ADD COLUMN source TEXT').run(); } catch { /* există deja */ }
   try { await env.DB.prepare('ALTER TABLE page_views ADD COLUMN ip_hash TEXT').run(); } catch { /* există deja */ }
@@ -739,9 +740,19 @@ function classifySource(referer, siteHost) {
 async function recordHit(env, path, country, source, ipHash) {
   if (!env.DB) return;
   const ts = Date.now();
+  const p = path.slice(0, 200);
+  // Deduplicare: nu re-înregistra aceeași pagină de la același vizitator în 15s (prefetch/dublu).
+  if (ipHash) {
+    try {
+      const dup = await env.DB.prepare(
+        'SELECT 1 FROM page_views WHERE ip_hash = ? AND path = ? AND ts > ? LIMIT 1'
+      ).bind(ipHash, p, ts - 15000).first();
+      if (dup) return;
+    } catch { /* dacă lipsește coloana, continuăm cu insert */ }
+  }
   const insert = () => env.DB.prepare(
     'INSERT INTO page_views (ts, path, country, source, ip_hash) VALUES (?, ?, ?, ?, ?)'
-  ).bind(ts, path.slice(0, 200), country, source || 'direct', ipHash || null).run();
+  ).bind(ts, p, country, source || 'direct', ipHash || null).run();
   try {
     await insert();
   } catch {
@@ -804,7 +815,12 @@ async function handlePurgeAnalytics(request, env) {
   // 3) Șterge traficul din țări fără audiență RO (data-center/boți)
   const ph = BOT_COUNTRIES.map(() => '?').join(',');
   const r3 = await env.DB.prepare(`DELETE FROM page_views WHERE country IN (${ph})`).bind(...BOT_COUNTRIES).run();
-  const deleted = ((r1.meta && r1.meta.changes) || 0) + ((r2.meta && r2.meta.changes) || 0) + ((r3.meta && r3.meta.changes) || 0);
+  // 4) Deduplică istoricul: o singură vizită per (secundă, pagină, țară) — elimină prefetch/dubluri
+  const r4 = await env.DB.prepare(
+    'DELETE FROM page_views WHERE id NOT IN (SELECT MIN(id) FROM page_views GROUP BY ts/1000, path, country)'
+  ).run();
+  const deleted = ((r1.meta && r1.meta.changes) || 0) + ((r2.meta && r2.meta.changes) || 0)
+                + ((r3.meta && r3.meta.changes) || 0) + ((r4.meta && r4.meta.changes) || 0);
   return json({ success: true, deleted });
 }
 
