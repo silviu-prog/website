@@ -83,10 +83,12 @@ export default {
     if (request.method === 'GET' && !pathname.startsWith('/api')) {
       const accept = request.headers.get('Accept') || '';
       const ua = request.headers.get('User-Agent') || '';
-      const isPage = accept.includes('text/html') && !pathname.startsWith('/admin');
+      const isJunk = /wp-|xmlrpc|\.php|\.env|\.git|\.aspx|\/vendor\//i.test(pathname);
+      const isPage = accept.includes('text/html') && !pathname.startsWith('/admin') && !isJunk;
       const isBot = /bot|crawl|spider|slurp|preview|facebookexternalhit|monitor|headless/i.test(ua);
       if (isPage && !isBot) {
-        ctx.waitUntil(recordHit(env, pathname, (request.cf && request.cf.country) || null));
+        const source = classifySource(request.headers.get('Referer') || '', url.hostname);
+        ctx.waitUntil(recordHit(env, pathname, (request.cf && request.cf.country) || null, source));
       }
     }
 
@@ -694,17 +696,29 @@ const RO_OFFSET = 3 * 3600; // secunde (+3h, ora României vara)
 
 async function ensureAnalytics(env) {
   await env.DB.prepare(
-    'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT)'
+    'CREATE TABLE IF NOT EXISTS page_views (id INTEGER PRIMARY KEY AUTOINCREMENT, ts INTEGER NOT NULL, path TEXT, country TEXT, source TEXT)'
   ).run();
   await env.DB.prepare('CREATE INDEX IF NOT EXISTS idx_page_views_ts ON page_views(ts)').run();
+  // Coloana source poate lipsi pe tabele mai vechi.
+  try { await env.DB.prepare('ALTER TABLE page_views ADD COLUMN source TEXT').run(); } catch { /* există deja */ }
 }
 
-async function recordHit(env, path, country) {
+// Clasifică sursa vizitei din header-ul Referer.
+function classifySource(referer, siteHost) {
+  if (!referer) return 'direct';
+  try {
+    const h = new URL(referer).hostname.replace(/^www\./, '').toLowerCase();
+    if (h === siteHost || h.endsWith('yeshuabook.com') || h.endsWith('pages.dev')) return 'internal';
+    return h.slice(0, 80);
+  } catch { return 'other'; }
+}
+
+async function recordHit(env, path, country, source) {
   if (!env.DB) return;
   const ts = Date.now();
   const insert = () => env.DB.prepare(
-    'INSERT INTO page_views (ts, path, country) VALUES (?, ?, ?)'
-  ).bind(ts, path.slice(0, 200), country).run();
+    'INSERT INTO page_views (ts, path, country, source) VALUES (?, ?, ?, ?)'
+  ).bind(ts, path.slice(0, 200), country, source || 'direct').run();
   try {
     await insert();
   } catch {
@@ -736,6 +750,16 @@ async function handleAnalytics(request, env) {
     perDay:  await bucketed(now - 30 * 24 * 3600 * 1000, '%Y-%m-%d'),
     perWeek: await bucketed(now - 84 * 24 * 3600 * 1000, '%Y-W%W')
   };
+
+  // Vizite recente (oră + sursă) și defalcare pe surse (ultimele 30 zile).
+  const recentRes = await env.DB.prepare(
+    'SELECT ts, path, source, country FROM page_views ORDER BY ts DESC LIMIT 60'
+  ).all();
+  const sourcesRes = await env.DB.prepare(
+    "SELECT COALESCE(source,'direct') AS source, COUNT(*) AS n FROM page_views WHERE ts >= ? GROUP BY COALESCE(source,'direct') ORDER BY n DESC LIMIT 15"
+  ).bind(now - 30 * 24 * 3600 * 1000).all();
+  analytics.recent  = (recentRes.results  || []).map(r => ({ ts: r.ts, path: r.path, source: r.source, country: r.country }));
+  analytics.sources = (sourcesRes.results || []).map(r => ({ source: r.source, n: r.n }));
 
   return json({ success: true, analytics });
 }
