@@ -606,7 +606,10 @@
 
   <!-- ── Sursa vizitelor (jos) ────────────────────────────────── -->
   <section class="analytics-section" id="visitSourceSection">
-    <div class="analytics-head"><h2>🌐 Sursa vizitelor</h2></div>
+    <div class="analytics-head">
+      <h2>🌐 Sursa vizitelor</h2>
+      <button class="btn-icon" id="purgeBtn">🧹 Curăță boți</button>
+    </div>
     <div class="chart-block">
       <div class="chart-title">De unde vin vizitatorii — ultimele 30 de zile</div>
       <div id="sourceBreakdown" class="source-breakdown"></div>
@@ -687,6 +690,17 @@
   // ── Analytics / Vizite ───────────────────────────────────────
   const A_REFRESH = document.getElementById('analyticsRefresh');
   if (A_REFRESH) A_REFRESH.addEventListener('click', loadAnalytics);
+
+  const PURGE_BTN = document.getElementById('purgeBtn');
+  if (PURGE_BTN) PURGE_BTN.addEventListener('click', async () => {
+    if (!confirm('Ștergi vizitele-gunoi de la boți/scanere (căi WordPress/PHP)?')) return;
+    try {
+      const r = await fetch('/api/admin/analytics/purge', { method: 'POST', headers: { 'X-Admin-Token': authToken } });
+      const d = await r.json();
+      if (d.success) { toast('Am șters ' + d.deleted + ' vizite-gunoi de la boți'); loadAnalytics(); }
+      else toast('Eroare la curățare');
+    } catch { toast('Eroare la curățare'); }
+  });
 
   function pad2(n) { return String(n).padStart(2, '0'); }
   // Cheie în ora României (+3h), la fel ca formatul din server.
