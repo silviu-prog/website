@@ -12,6 +12,8 @@
 //   SAMEDAY_API_URL            (opțional)    – default https://api.sameday.ro
 //                                              sandbox: https://sameday-api.demo.zitec.com
 //   SITE_ORIGIN                (opțional)    – ex. https://yeshuabook.com (altfel se ia din request)
+//   RESEND_API_KEY                           – cheie API Resend (resend.com), pentru mementouri de plată
+//   RESEND_FROM                (opțional)    – ex. "YESHUA <reminder@yeshuabook.com>" (necesită domeniu verificat în Resend)
 // Binding D1: env.DB
 
 // ── Preț autoritativ (server) — NU se au în considerare prețurile trimise de client.
@@ -73,6 +75,9 @@ export default {
       }
       if (pathname === '/api/admin/analytics/diag' && request.method === 'GET') {
         return handleAnalyticsDiag(request, env);
+      }
+      if (pathname === '/api/admin/orders/remind' && request.method === 'POST') {
+        return handleSendReminders(request, env);
       }
       const adminOrderMatch = pathname.match(/^\/api\/admin\/orders\/([A-Za-z0-9-]+)$/);
       if (adminOrderMatch && request.method === 'PATCH') {
@@ -604,6 +609,7 @@ async function handleListOrders(request, env) {
       shipping_country, shipping_address, shipping_city, shipping_postal, shipping_region,
       locker_id, locker_name,
       awb_number AS awbNumber, awb_cost AS awbCost, awb_error AS awbError,
+      reminder_sent_at AS reminderSentAt, reminder_count AS reminderCount,
       notes
     FROM orders
     ORDER BY created_at DESC
@@ -664,6 +670,126 @@ async function handleGenerateAwb(request, env, id) {
     return json({ success: false, error: 'Comanda nu a fost găsită' }, 404);
   }
   return json({ success: true, awbNumber: awb });
+}
+
+// ────────────────────────────────────────────────────────────────
+// Mementouri de plată (email, prin Resend)
+// ────────────────────────────────────────────────────────────────
+
+// Trimite mementouri către clienți cu comenzi neplătite.
+// Body opțional: { orderIds: ["YSH-...", ...] } — altfel se aleg automat
+// toate comenzile noi (status='new') cu plata în așteptare (payment_status='pending').
+async function handleSendReminders(request, env) {
+  const unauth = requireAdmin(request, env);
+  if (unauth) return unauth;
+  if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
+  if (!env.RESEND_API_KEY) return json({ success: false, error: 'RESEND_API_KEY lipsește din configurație' }, 503);
+
+  let body = {};
+  try { body = await request.json(); } catch { /* body opțional */ }
+
+  let orders;
+  if (Array.isArray(body.orderIds) && body.orderIds.length) {
+    const ids = body.orderIds.filter(id => validString(id, 60)).slice(0, 200);
+    if (!ids.length) return json({ success: false, error: 'orderIds invalid' }, 400);
+    const placeholders = ids.map(() => '?').join(',');
+    const { results } = await env.DB.prepare(
+      `SELECT * FROM orders WHERE id IN (${placeholders}) AND payment_status = 'pending'`
+    ).bind(...ids).all();
+    orders = results || [];
+  } else {
+    const { results } = await env.DB.prepare(
+      "SELECT * FROM orders WHERE payment_status = 'pending' AND status = 'new' ORDER BY created_at ASC"
+    ).all();
+    orders = results || [];
+  }
+
+  const origin = siteOrigin(request, env);
+  const results = [];
+  for (const order of orders) {
+    try {
+      await sendOrderReminder(env, origin, order);
+      results.push({ id: order.id, email: order.customer_email, success: true });
+    } catch (err) {
+      results.push({ id: order.id, email: order.customer_email, success: false, error: err.message || String(err) });
+    }
+  }
+  return json({ success: true, results });
+}
+
+// Regenerează un link Stripe proaspăt (sesiunea veche a expirat de mult) și trimite emailul.
+async function sendOrderReminder(env, origin, order) {
+  let paymentUrl = null;
+  if (order.product === 'fizica' && order.payment_status === 'pending') {
+    const session = await createStripeCheckout(env, {
+      origin, id: order.id, productLabel: order.product_label,
+      unitPrice: order.unit_price, quantity: order.quantity,
+      shippingPrice: order.shipping_price, isPhysical: true,
+      email: order.customer_email
+    });
+    await env.DB.prepare('UPDATE orders SET stripe_session_id = ? WHERE id = ?')
+      .bind(session.id, order.id).run();
+    paymentUrl = session.url;
+  }
+
+  await sendReminderEmail(env, order, paymentUrl);
+
+  await env.DB.prepare(
+    "UPDATE orders SET reminder_sent_at = ?, reminder_count = COALESCE(reminder_count, 0) + 1 WHERE id = ?"
+  ).bind(new Date().toISOString(), order.id).run();
+}
+
+async function sendReminderEmail(env, order, paymentUrl) {
+  const from = env.RESEND_FROM || 'YESHUA <onboarding@resend.dev>';
+  const total = Number(order.total || 0).toLocaleString('ro-RO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const firstName = String(order.customer_name || '').trim().split(/\s+/)[0] || 'Bună';
+
+  const ctaHtml = paymentUrl
+    ? `<p style="margin:28px 0;text-align:center;">
+         <a href="${escapeHtml(paymentUrl)}" style="background:#8a6d1e;color:#fff;text-decoration:none;padding:14px 28px;border-radius:6px;font-weight:600;display:inline-block;">Finalizează plata</a>
+       </p>`
+    : '';
+
+  const html = `
+    <div style="font-family:Georgia,'Times New Roman',serif;max-width:520px;margin:0 auto;color:#2a2118;">
+      <p style="font-size:1.1rem;">Bună, ${escapeHtml(firstName)},</p>
+      <p>Comanda ta <strong>${escapeHtml(order.id)}</strong> pentru <strong>${escapeHtml(order.product_label)}</strong>
+         (${escapeHtml(String(order.quantity))} buc., total <strong>${total} ${escapeHtml(order.currency)}</strong>)
+         este încă neplătită.</p>
+      <p>Dacă mai dorești cartea, poți finaliza plata cu un singur click mai jos. Dacă te-ai răzgândit, poți ignora acest email.</p>
+      ${ctaHtml}
+      <p style="font-size:0.85rem;color:#6b5f4e;">Ai întrebări? Răspunde direct la acest email.</p>
+      <p style="margin-top:24px;">Cu drag,<br/>Echipa YESHUA</p>
+    </div>`;
+
+  const text = `Bună, ${firstName},\n\n`
+    + `Comanda ta ${order.id} pentru ${order.product_label} (${order.quantity} buc., total ${total} ${order.currency}) este încă neplătită.\n`
+    + (paymentUrl ? `Finalizează plata aici: ${paymentUrl}\n\n` : '\n')
+    + `Dacă te-ai răzgândit, poți ignora acest email.\n\nCu drag,\nEchipa YESHUA`;
+
+  const resp = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + env.RESEND_API_KEY,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from,
+      to: [order.customer_email],
+      subject: `Comanda ta YESHUA (${order.id}) așteaptă plata`,
+      html,
+      text
+    })
+  });
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error('Resend: ' + (data.message || resp.status));
+  return data;
+}
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+  ));
 }
 
 // Diagnostic: testează autentificarea Sameday și ajută la descoperirea ID-urilor

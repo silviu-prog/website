@@ -37,6 +37,10 @@ CREATE TABLE IF NOT EXISTS orders (
   awb_cost         REAL,
   awb_error        TEXT,
 
+  -- Memento plată (email)
+  reminder_sent_at TEXT,
+  reminder_count   INTEGER NOT NULL DEFAULT 0,
+
   notes            TEXT
 );
 

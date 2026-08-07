@@ -597,6 +597,7 @@
 
   <div class="toolbar">
     <h2 id="tableTitle">Toate comenzile</h2>
+    <button class="btn-icon" id="remindAllBtn">📧 Trimite mementouri (neplătite)</button>
     <input type="search" id="searchInput" class="search-input" placeholder="Caută după nume, email, telefon, ID..." />
   </div>
 
@@ -827,6 +828,39 @@
       .catch(() => { localStorage.removeItem('yeshua_admin_token'); authToken = ''; });
   }
 
+  // ── Mementouri plată ─────────────────────────────────────────
+  document.getElementById('remindAllBtn').addEventListener('click', async () => {
+    const targets = orders.filter(o => o.paymentStatus === 'pending' && o.status === 'new');
+    if (!targets.length) { toast('Nicio comandă neplătită de reamintit'); return; }
+    if (!confirm(`Trimit memento de plată către ${targets.length} client(i) cu comenzi neplătite?`)) return;
+    await sendReminders(null, `${targets.length} client(i)`);
+  });
+
+  async function sendReminders(orderIds, label) {
+    const btn = document.getElementById('remindAllBtn');
+    const prevText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Se trimite...';
+    try {
+      const r = await fetch('/api/admin/orders/remind', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Admin-Token': authToken },
+        body: JSON.stringify(orderIds ? { orderIds } : {})
+      });
+      const data = await r.json();
+      if (!r.ok || !data.success) throw new Error(data.error || 'Eroare la trimitere');
+      const ok = data.results.filter(x => x.success).length;
+      const fail = data.results.filter(x => !x.success);
+      toast(`Trimise ${ok}/${data.results.length} mementouri (${label})` + (fail.length ? ` — eșec: ${fail.map(f => f.email).join(', ')}` : ''));
+      await refresh();
+    } catch (err) {
+      toast('Eroare: ' + (err.message || err));
+    } finally {
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
   // ── Refresh ──────────────────────────────────────────────────
   document.getElementById('refreshBtn').addEventListener('click', refresh);
   async function refresh() {
@@ -1021,6 +1055,11 @@
           <dt>Plată</dt><dd>${esc(o.paymentMethod)} <span class="pay-badge ${o.paymentStatus}">${PAYMENT_LABELS[o.paymentStatus] || o.paymentStatus || '—'}</span></dd>
           <dt><strong>Total</strong></dt><dd><strong style="font-size:1.1em;color:var(--gold-dark);">${o.total} ${o.currency}</strong></dd>
         </dl>
+        ${o.paymentStatus === 'pending' ? `
+        <div style="margin-top:10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <button class="status-btn" id="remindOneBtn">📧 Trimite memento de plată</button>
+          ${o.reminderSentAt ? `<span style="font-size:0.85rem;color:var(--text-muted)">Ultimul trimis: ${formatDate(o.reminderSentAt, true)} (${o.reminderCount || 1}×)</span>` : ''}
+        </div>` : ''}
       </div>
 
       ${o.product === 'fizica' ? `
@@ -1064,6 +1103,31 @@
     });
     const saveAwbBtn = document.getElementById('saveAwbBtn');
     if (saveAwbBtn) saveAwbBtn.addEventListener('click', () => saveAwb(o.id, saveAwbBtn));
+    const remindOneBtn = document.getElementById('remindOneBtn');
+    if (remindOneBtn) remindOneBtn.addEventListener('click', async () => {
+      if (!confirm(`Trimit memento de plată către ${o.customerName} (${o.customerEmail})?`)) return;
+      remindOneBtn.disabled = true;
+      remindOneBtn.textContent = 'Se trimite...';
+      try {
+        const r = await fetch('/api/admin/orders/remind', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Admin-Token': authToken },
+          body: JSON.stringify({ orderIds: [o.id] })
+        });
+        const data = await r.json();
+        const result = data.results && data.results[0];
+        if (!r.ok || !data.success || !result || !result.success) {
+          throw new Error((result && result.error) || data.error || 'Eroare la trimitere');
+        }
+        toast('Memento trimis către ' + o.customerEmail);
+        await refresh();
+        closeModal();
+      } catch (err) {
+        toast('Eroare: ' + (err.message || err));
+        remindOneBtn.disabled = false;
+        remindOneBtn.textContent = '📧 Trimite memento de plată';
+      }
+    });
     document.getElementById('modalBackdrop').classList.add('active');
   }
 
