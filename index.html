@@ -1207,7 +1207,7 @@
       border-top: 1px solid rgba(196,146,42,0.15);
     }
     .video-inner {
-      max-width: 880px;
+      max-width: 1100px;
       margin: 0 auto;
     }
     .video-header {
@@ -1246,6 +1246,23 @@
       width: 100%;
       height: 100%;
       border: 0;
+    }
+    .video-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+    }
+    .video-item-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--warm-brown);
+      text-align: center;
+      margin-top: 14px;
+      line-height: 1.4;
+    }
+    @media (max-width: 760px) {
+      .video-grid { grid-template-columns: 1fr; }
     }
 
     /* ── CTA / Order ──────────────────────────────── */
@@ -3103,17 +3120,35 @@
     <div class="video-header">
       <div class="section-label">Episod de podcast</div>
       <h2 class="section-title">Despre carte și despre Yeshua, în cuvintele mele</h2>
-      <p class="video-sub">Un episod în care prezint cartea și punctul meu de vedere asupra lui Yeshua.</p>
+      <p class="video-sub">Episoade în care prezint cartea și punctul meu de vedere asupra lui Yeshua.</p>
     </div>
-    <div class="video-frame">
-      <iframe
-        src="https://www.youtube-nocookie.com/embed/BFRCLeEuiVY"
-        title="Episod de podcast — Yeshua: Iisus fără creștinism"
-        loading="lazy"
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen></iframe>
+    <div class="video-grid">
+      <div>
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/BFRCLeEuiVY"
+            title="Episod de podcast — Yeshua: Iisus fără creștinism"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Despre carte și despre Yeshua, în cuvintele mele</p>
+      </div>
+      <div>
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/TiBuMKUEKEw"
+            title="Iisus nu a fost mântuitor. A fost ALCHIMIST. Iar crucea înseamnă moartea egoului"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Iisus nu a fost mântuitor. A fost ALCHIMIST. Iar crucea înseamnă moartea egoului</p>
+      </div>
     </div>
   </div>
 </section>
