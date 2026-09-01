@@ -36,6 +36,7 @@ CREATE TABLE IF NOT EXISTS orders (
   awb_number       TEXT,
   awb_cost         REAL,
   awb_error        TEXT,
+  shipped_at       TEXT,   -- data/ora expedierii (ISO), setată la salvarea AWB-ului
 
   notes            TEXT
 );

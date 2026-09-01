@@ -1028,6 +1028,7 @@
         <h4>AWB / Expediere</h4>
         <dl class="detail-grid">
           <dt>AWB curent</dt><dd class="mono">${o.awbNumber ? esc(o.awbNumber) : '<span style="color:var(--text-muted)">neintrodus</span>'}</dd>
+          <dt>Data expedierii</dt><dd>${o.shippedAt ? formatDate(o.shippedAt, true) : '<span style="color:var(--text-muted)">—</span>'}</dd>
         </dl>
         <p style="font-size:0.85rem;color:var(--text-muted);margin:8px 0;">Introdu manual numărul AWB primit de la curier (Sameday etc.). Comanda devine „Expediată".</p>
         <div style="display:flex;gap:8px;margin-top:6px;flex-wrap:wrap;">

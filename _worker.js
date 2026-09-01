@@ -588,12 +588,17 @@ async function createSamedayAwb(env, order) {
 // Admin
 // ────────────────────────────────────────────────────────────────
 
+// Coloana shipped_at poate lipsi pe baze existente — adăugată la nevoie.
+async function ensureShippedAtColumn(env) {
+  try { await env.DB.prepare('ALTER TABLE orders ADD COLUMN shipped_at TEXT').run(); } catch { /* există deja */ }
+}
+
 async function handleListOrders(request, env) {
   const unauth = requireAdmin(request, env);
   if (unauth) return unauth;
   if (!env.DB) return json({ success: false, error: 'Database not configured' }, 503);
 
-  const { results } = await env.DB.prepare(`
+  const listSql = `
     SELECT
       id, created_at, status,
       product, product_label AS productLabel, quantity, unit_price AS unitPrice,
@@ -603,12 +608,19 @@ async function handleListOrders(request, env) {
       customer_name AS customerName, customer_email AS customerEmail, customer_phone AS customerPhone,
       shipping_country, shipping_address, shipping_city, shipping_postal, shipping_region,
       locker_id, locker_name,
-      awb_number AS awbNumber, awb_cost AS awbCost, awb_error AS awbError,
+      awb_number AS awbNumber, awb_cost AS awbCost, awb_error AS awbError, shipped_at AS shippedAt,
       notes
     FROM orders
     ORDER BY created_at DESC
     LIMIT 1000
-  `).all();
+  `;
+  let results;
+  try {
+    ({ results } = await env.DB.prepare(listSql).all());
+  } catch {
+    await ensureShippedAtColumn(env);
+    ({ results } = await env.DB.prepare(listSql).all());
+  }
 
   return json({ success: true, orders: results || [] });
 }
@@ -657,9 +669,15 @@ async function handleGenerateAwb(request, env, id) {
   if (!awb) return json({ success: false, error: 'Introdu numărul AWB' }, 400);
   if (awb.length > 100) return json({ success: false, error: 'AWB prea lung' }, 400);
 
-  const result = await env.DB.prepare(
-    "UPDATE orders SET awb_number = ?, awb_error = NULL, status = 'shipped' WHERE id = ?"
-  ).bind(awb, id).run();
+  const updateSql = "UPDATE orders SET awb_number = ?, awb_error = NULL, status = 'shipped', shipped_at = ? WHERE id = ?";
+  const nowIso = new Date().toISOString();
+  let result;
+  try {
+    result = await env.DB.prepare(updateSql).bind(awb, nowIso, id).run();
+  } catch {
+    await ensureShippedAtColumn(env);
+    result = await env.DB.prepare(updateSql).bind(awb, nowIso, id).run();
+  }
   if (!result.meta || result.meta.changes === 0) {
     return json({ success: false, error: 'Comanda nu a fost găsită' }, 404);
   }
