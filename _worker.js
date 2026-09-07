@@ -634,9 +634,28 @@ async function handleUpdateOrder(request, env, id) {
   try { body = await request.json(); } catch { return json({ success: false, error: 'Invalid JSON' }, 400); }
 
   const allowedStatuses = ['new', 'confirmed', 'shipped', 'delivered', 'cancelled'];
-  if (!allowedStatuses.includes(body.status)) return json({ success: false, error: 'Status invalid' }, 400);
+  const allowedPaymentStatuses = ['pending', 'paid', 'cod', 'failed'];
 
-  const result = await env.DB.prepare('UPDATE orders SET status = ? WHERE id = ?').bind(body.status, id).run();
+  const sets = [];
+  const values = [];
+
+  if (body.status !== undefined) {
+    if (!allowedStatuses.includes(body.status)) return json({ success: false, error: 'Status invalid' }, 400);
+    sets.push('status = ?'); values.push(body.status);
+  }
+  // Corectare manuală a metodei de plată (ex. comandă marcată greșit ca „pending" când e de fapt ramburs).
+  if (body.paymentStatus !== undefined) {
+    if (!allowedPaymentStatuses.includes(body.paymentStatus)) return json({ success: false, error: 'Status plată invalid' }, 400);
+    sets.push('payment_status = ?'); values.push(body.paymentStatus);
+  }
+  if (body.paymentMethod !== undefined) {
+    if (!validString(body.paymentMethod, 100)) return json({ success: false, error: 'Metodă de plată invalidă' }, 400);
+    sets.push('payment_method = ?'); values.push(body.paymentMethod.trim());
+  }
+  if (!sets.length) return json({ success: false, error: 'Nimic de actualizat' }, 400);
+
+  values.push(id);
+  const result = await env.DB.prepare(`UPDATE orders SET ${sets.join(', ')} WHERE id = ?`).bind(...values).run();
   if (!result.meta || result.meta.changes === 0) {
     return json({ success: false, error: 'Comanda nu a fost găsită' }, 404);
   }
