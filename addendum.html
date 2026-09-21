@@ -3,24 +3,24 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Addendum — Episoade YouTube | YESHUA</title>
-<meta name="description" content="Toate episoadele video addendum la cartea YESHUA — Iisus Fără Creștinism." />
+<title>Addendum — Toate Episoadele | Silviu Rotariu</title>
+<meta name="description" content="Toate episoadele podcastului Addendum, by Silviu Rotariu." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Paletă derivată din cromatica reală a thumbnail-urilor Addendum (mov/lavandă) */
   :root {
-    --gold:        #C4922A;
-    --gold-light:  #E8C87A;
-    --gold-dark:   #8B6318;
-    --cream:       #F5F0E8;
-    --parchment:   #FAF7F2;
-    --warm-dark:   #1C1208;
-    --warm-brown:  #3D2B1A;
-    --text-main:   #2C1E0F;
-    --text-muted:  #6B5740;
+    --accent:       #9a76ab;
+    --accent-light: #cdb3de;
+    --accent-dark:  #5c4270;
+    --bg-deep:      #150e1d;
+    --parchment:    #f7f3fb;
+    --cream:        #efe6f7;
+    --text-main:    #241a30;
+    --text-muted:   #6e5c7e;
   }
 
   html { scroll-behavior: smooth; }
@@ -41,17 +41,25 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: rgba(28, 18, 8, 0.96);
+    background: rgba(21, 14, 29, 0.96);
     box-shadow: 0 2px 24px rgba(0,0,0,0.35);
     backdrop-filter: blur(8px);
   }
   .nav-logo {
     font-family: 'Cinzel', serif;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    color: var(--gold-light);
+    color: var(--accent-light);
     letter-spacing: 0.12em;
     text-decoration: none;
+  }
+  .nav-logo span {
+    display: block;
+    font-size: 0.6rem;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.45);
+    font-weight: 400;
+    margin-top: 2px;
   }
   .nav-back {
     font-family: 'Cinzel', serif;
@@ -63,7 +71,7 @@
     text-transform: uppercase;
     transition: color 0.2s;
   }
-  .nav-back:hover { color: var(--gold-light); }
+  .nav-back:hover { color: var(--accent-light); }
 
   @media (max-width: 600px) {
     nav { padding: 16px 20px; }
@@ -73,7 +81,20 @@
   .page-header {
     text-align: center;
     padding: 72px 24px 48px;
-    background: linear-gradient(160deg, #0D0804 0%, #1C1208 50%, #0D0804 100%);
+    background: linear-gradient(160deg, var(--bg-deep) 0%, #201432 50%, var(--bg-deep) 100%);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 900px;
+    height: 900px;
+    background: radial-gradient(ellipse at center, rgba(154,118,171,0.28) 0%, rgba(92,66,112,0.10) 40%, transparent 70%);
+    pointer-events: none;
   }
   .section-label {
     font-family: 'Cinzel', serif;
@@ -81,31 +102,33 @@
     font-weight: 600;
     letter-spacing: 0.4em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--accent-light);
     margin-bottom: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
+    position: relative;
   }
   .section-label::before, .section-label::after {
     content: '';
     display: block;
     height: 1px;
     width: 48px;
-    background: var(--gold);
+    background: var(--accent-light);
     opacity: 0.5;
   }
   .page-title {
     font-family: 'Cinzel', serif;
     font-size: clamp(1.9rem, 4.5vw, 3rem);
     font-weight: 700;
-    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    background: linear-gradient(135deg, var(--accent-light), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     line-height: 1.25;
     margin-bottom: 18px;
+    position: relative;
   }
   .page-sub {
     max-width: 640px;
@@ -113,16 +136,53 @@
     font-size: 1.1rem;
     font-style: italic;
     color: rgba(255,255,255,0.68);
+    position: relative;
   }
 
-  /* ── Video grid ───────────────────────────────── */
-  .video-section {
-    padding: 64px 48px 96px;
+  /* ── Grup de episoade ─────────────────────────── */
+  .episode-group {
+    padding: 64px 48px;
   }
-  .video-inner {
+  .episode-group + .episode-group {
+    border-top: 1px solid rgba(154,118,171,0.2);
+  }
+  .episode-group.unpublished {
+    background: var(--cream);
+  }
+  .episode-group.published {
+    background: var(--parchment);
+  }
+  .group-inner {
     max-width: 1400px;
     margin: 0 auto;
   }
+  .group-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .group-header .section-label {
+    color: var(--accent-dark);
+  }
+  .group-header .section-label::before, .group-header .section-label::after {
+    background: var(--accent-dark);
+  }
+  .group-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.25;
+    margin-bottom: 12px;
+  }
+  .group-sub {
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  /* ── Video grid & carduri ─────────────────────── */
   .video-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -134,9 +194,14 @@
     aspect-ratio: 16 / 9;
     border-radius: 8px;
     overflow: hidden;
-    border: 1px solid rgba(196,146,42,0.3);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 0 50px rgba(196,146,42,0.10);
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 55%, transparent);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.16), 0 0 40px color-mix(in srgb, var(--card-accent, var(--accent)) 22%, transparent);
     background: #000;
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .video-grid > div:hover .video-frame {
+    box-shadow: 0 24px 60px rgba(0,0,0,0.2), 0 0 55px color-mix(in srgb, var(--card-accent, var(--accent)) 35%, transparent);
+    transform: translateY(-2px);
   }
   .video-frame iframe {
     position: absolute;
@@ -147,9 +212,9 @@
   }
   .video-item-title {
     font-family: 'Cinzel', serif;
-    font-size: 0.95rem;
+    font-size: 0.92rem;
     font-weight: 700;
-    color: var(--warm-brown);
+    color: var(--text-main);
     text-align: center;
     margin-top: 14px;
     line-height: 1.4;
@@ -159,31 +224,19 @@
     font-family: 'EB Garamond', serif;
     font-weight: 400;
     font-style: italic;
-    font-size: 0.82rem;
-    color: var(--text-muted);
+    font-size: 0.8rem;
+    color: color-mix(in srgb, var(--card-accent, var(--accent)) 70%, var(--text-muted));
     margin-top: 6px;
   }
 
-  .empty-state {
-    text-align: center;
-    padding: 48px 24px;
-    color: var(--text-muted);
-    font-style: italic;
-    font-size: 1.05rem;
-    border: 1px dashed rgba(196,146,42,0.35);
-    border-radius: 8px;
-    max-width: 640px;
-    margin: 0 auto;
-  }
-
   @media (max-width: 760px) {
-    .video-section { padding: 48px 20px 72px; }
+    .episode-group { padding: 48px 20px; }
     .video-grid { grid-template-columns: 1fr; }
   }
 
   /* ── Footer ───────────────────────────────────── */
   footer {
-    background: var(--warm-dark);
+    background: var(--bg-deep);
     text-align: center;
     padding: 32px 24px;
   }
@@ -192,7 +245,7 @@
     font-size: 0.75rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
-    color: var(--gold-light);
+    color: var(--accent-light);
     text-decoration: none;
   }
   footer a:hover { text-decoration: underline; }
@@ -201,37 +254,361 @@
 <body>
 
 <nav>
-  <a href="/" class="nav-logo">YESHUA</a>
-  <a href="/#video" class="nav-back">← Înapoi pe site</a>
+  <a href="/" class="nav-logo">ADDENDUM<span>by Silviu Rotariu</span></a>
+  <a href="/#video" class="nav-back">← Înapoi pe yeshuabook.com</a>
 </nav>
 
 <header class="page-header">
   <div class="section-label">Addendum</div>
-  <h1 class="page-title">Toate episoadele video</h1>
-  <p class="page-sub">Colecția completă de episoade addendum la cartea YESHUA — Iisus Fără Creștinism.</p>
+  <h1 class="page-title">Toate episoadele podcastului</h1>
+  <p class="page-sub">Colecția completă de episoade Addendum, by Silviu Rotariu.</p>
 </header>
 
-<section class="video-section">
-  <div class="video-inner">
-    <div class="video-grid" id="videoGrid">
-      <!-- Episoadele se adaugă aici, câte un bloc pentru fiecare video:
-      <div>
+<section class="episode-group unpublished">
+  <div class="group-inner">
+    <div class="group-header">
+      <div class="section-label">Nepublicate încă</div>
+      <h2 class="group-title">Episoade nepublicate / programate</h2>
+      <p class="group-sub">Vizibile momentan doar prin acest link — nu apar încă pe canalul YouTube.</p>
+    </div>
+    <div class="video-grid">
+      <div style="--card-accent: #7b66c6;">
         <div class="video-frame">
           <iframe
-            src="https://www.youtube-nocookie.com/embed/VIDEO_ID"
-            title="Titlul episodului"
+            src="https://www.youtube-nocookie.com/embed/Z2lmM56V-jo"
+            title="Podcast cu sens by Natasha — nedifuzat"
             loading="lazy"
             frameborder="0"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             referrerpolicy="strict-origin-when-cross-origin"
             allowfullscreen></iframe>
         </div>
-        <p class="video-item-title">Titlul episodului</p>
+        <p class="video-item-title">Podcast cu sens by Natasha — nedifuzat<span class="video-unlisted-note">Nepublicat încă — vizibil doar prin acest link.</span></p>
       </div>
-      -->
+      <div style="--card-accent: #9570ab;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/xTqE5epGzmA"
+            title="Când Dumnezeu îți dă dreptate, religia devine periculoasă | Programat pentru difuzare în octombrie 2026"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Când Dumnezeu îți dă dreptate, religia devine periculoasă | Programat pentru difuzare în octombrie 2026<span class="video-unlisted-note">Nepublicat încă — vizibil doar prin acest link.</span></p>
+      </div>
+      <div style="--card-accent: #9574a9;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/QGpuUEhwsEc"
+            title="Creștinismul a mutat învierea din conștiință în mormânt | Programat pentru difuzare în noiembrie 2026"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Creștinismul a mutat învierea din conștiință în mormânt | Programat pentru difuzare în noiembrie 2026<span class="video-unlisted-note">Nepublicat încă — vizibil doar prin acest link.</span></p>
+      </div>
+      <div style="--card-accent: #9174a3;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/5Jk840iU5QY"
+            title="Bisericile l-ar primi pe Iisus ca enoriaș, dar nu l-ar lăsa să predice | Programat pentru difuzare în 2027"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Bisericile l-ar primi pe Iisus ca enoriaș, dar nu l-ar lăsa să predice | Programat pentru difuzare în 2027<span class="video-unlisted-note">Nepublicat încă — vizibil doar prin acest link.</span></p>
+      </div>
     </div>
-    <div class="empty-state" id="emptyState">
-      Episoadele vor fi adăugate aici în curând.
+  </div>
+</section>
+
+<section class="episode-group published">
+  <div class="group-inner">
+    <div class="group-header">
+      <div class="section-label">Publicate</div>
+      <h2 class="group-title">Episoade difuzate pe YouTube</h2>
+      <p class="group-sub">Episoadele complete, deja publice pe canal.</p>
+    </div>
+    <div class="video-grid">
+      <div style="--card-accent: #9277aa;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/wuGmAJIpzVc"
+            title="Credința nu te scapă de ego. Ți-l botează creștin"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Credința nu te scapă de ego. Ți-l botează creștin</p>
+      </div>
+      <div style="--card-accent: #9773ab;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/wNxXQEkCkG4"
+            title="Ce caută, de fapt, un bărbat matur la o femeie?"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Ce caută, de fapt, un bărbat matur la o femeie?</p>
+      </div>
+      <div style="--card-accent: #9775a4;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/6KHGCIZWc8A"
+            title="Care este cea mai eficientă formă de manipulare în cuplu? Despre narcisiștii vulnerabili"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Care este cea mai eficientă formă de manipulare în cuplu? Despre narcisiștii vulnerabili</p>
+      </div>
+      <div style="--card-accent: #90729d;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/6ekzfCKYkrs"
+            title="Să nu mă mai privești în ochi e mai grav decât înșelatul | Podcast cu sens by Natasha"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Să nu mă mai privești în ochi e mai grav decât înșelatul | Podcast cu sens by Natasha</p>
+      </div>
+      <div style="--card-accent: #9d7ead;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/TiBuMKUEKEw"
+            title="Iisus nu a fost mântuitor. A fost ALCHIMIST. Iar crucea înseamnă moartea egoului"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Iisus nu a fost mântuitor. A fost ALCHIMIST. Iar crucea înseamnă moartea egoului</p>
+      </div>
+      <div style="--card-accent: #9675a8;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/59_HfvC0SdI"
+            title="De ce ne îndrăgostim exact de oamenii care ne rănesc? Gazda Clara Ilie"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">De ce ne îndrăgostim exact de oamenii care ne rănesc? Gazda Clara Ilie</p>
+      </div>
+      <div style="--card-accent: #70487d;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/k1KbsH1pNNs"
+            title="M-a lăsat singur în club și a plecat cu altul. Am simțit zero anxietate. De ce?"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">M-a lăsat singur în club și a plecat cu altul. Am simțit zero anxietate. De ce?</p>
+      </div>
+      <div style="--card-accent: #a27eb2;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/tKfTJpcvg_I"
+            title="Își pierde bărbatul interesul dacă faci sex prea devreme?"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Își pierde bărbatul interesul dacă faci sex prea devreme?</p>
+      </div>
+      <div style="--card-accent: #a77abb;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/fI1Xi9MBuDk"
+            title="Ai refuzat maturitatea și speri că te va salva compatibilitatea? Won&#x27;t happen | gazda Diana Gucea"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Ai refuzat maturitatea și speri că te va salva compatibilitatea? Won&#x27;t happen | gazda Diana Gucea</p>
+      </div>
+      <div style="--card-accent: #9b7dbb;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/yp2HaVcG07g"
+            title="Ghosting-ul: lipsă de interes sau lipsă de caracter? Rux și Opulență"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Ghosting-ul: lipsă de interes sau lipsă de caracter? Rux și Opulență</p>
+      </div>
+      <div style="--card-accent: #a37aba;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/BFRCLeEuiVY"
+            title="Dacă ai fi ca Iisus… probabil n-ai mai fi creștin"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Dacă ai fi ca Iisus… probabil n-ai mai fi creștin</p>
+      </div>
+      <div style="--card-accent: #9e78b3;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/zGM1ntR-yYM"
+            title="Ce doare mai tare decât înșelatul? Să nu te simți văzut | host Diana Sar"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Ce doare mai tare decât înșelatul? Să nu te simți văzut | host Diana Sar</p>
+      </div>
+      <div style="--card-accent: #a27aae;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/3mciLa8EyNg"
+            title="Partenerul ideal nu te face să-l admiri pe el, ci pe tine însăți | gazda Diana Gucea"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Partenerul ideal nu te face să-l admiri pe el, ci pe tine însăți | gazda Diana Gucea</p>
+      </div>
+      <div style="--card-accent: #a076a5;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/KFCyGDy3huw"
+            title="Care e diferența dintre un bărbat provider și unul sponsor? Mihaela Chistol și Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Care e diferența dintre un bărbat provider și unul sponsor? Mihaela Chistol și Silviu Rotariu</p>
+      </div>
+      <div style="--card-accent: #af86b7;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/sQfATafkQHk"
+            title="Dacă am fi maturi emoțional, am mai da block? Bianca Petrache și Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Dacă am fi maturi emoțional, am mai da block? Bianca Petrache și Silviu Rotariu</p>
+      </div>
+      <div style="--card-accent: #a17cb2;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/nIEwc0__kis"
+            title="Nu suntem pregătiți pentru adevăr și de aceea credem în Dumnezeu | Vlad Borla și Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Nu suntem pregătiți pentru adevăr și de aceea credem în Dumnezeu | Vlad Borla și Silviu Rotariu</p>
+      </div>
+      <div style="--card-accent: #a177a3;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/dnkryYsgf9Q"
+            title="Cum îți dai seama că cineva e persoana potrivită pentru tine?"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Cum îți dai seama că cineva e persoana potrivită pentru tine?</p>
+      </div>
+      <div style="--card-accent: #a17cae;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/bzxVW7XKWbs"
+            title="Pe femeie n-o poți convinge niciodată — gazda Diana Bart"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Pe femeie n-o poți convinge niciodată — gazda Diana Bart</p>
+      </div>
+      <div style="--card-accent: #a079a8;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/O1q1gGh1ZxQ"
+            title="Prefer o femeie care știe ce vrea după mulți parteneri decât una distrusă emoțional de unul singur"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Prefer o femeie care știe ce vrea după mulți parteneri decât una distrusă emoțional de unul singur</p>
+      </div>
+      <div style="--card-accent: #a479ac;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/uZYcf9oZw50"
+            title="A construi relația înseamnă a te adapta | Lorena Dicu și Silviu Rotariu | Addendum ep. 2"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">A construi relația înseamnă a te adapta | Lorena Dicu și Silviu Rotariu | Addendum ep. 2</p>
+      </div>
+      <div style="--card-accent: #b382aa;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/Ev-13OkHIrI"
+            title="Am nevoie să n-ai nevoie de nimic | Addendum Ep. 1 cu Silviu Rotariu și Diana Gucea"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Am nevoie să n-ai nevoie de nimic | Addendum Ep. 1 cu Silviu Rotariu și Diana Gucea</p>
+      </div>
     </div>
   </div>
 </section>
