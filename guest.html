@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Silviu Rotariu — Invitat</title>
+<meta name="description" content="Apariții ale lui Silviu Rotariu ca invitat în alte podcasturi și emisiuni YouTube." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold:        #C4922A;
+    --gold-light:  #E8C87A;
+    --gold-dark:   #8B6318;
+    --cream:       #F5F0E8;
+    --parchment:   #FAF7F2;
+    --warm-dark:   #1C1208;
+    --warm-brown:  #3D2B1A;
+    --text-main:   #2C1E0F;
+    --text-muted:  #6B5740;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'EB Garamond', Georgia, serif;
+    background: var(--parchment);
+    color: var(--text-main);
+    line-height: 1.75;
+  }
+
+  /* ── Nav ──────────────────────────────────────── */
+  nav {
+    position: sticky;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 18px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(28, 18, 8, 0.96);
+    box-shadow: 0 2px 24px rgba(0,0,0,0.35);
+    backdrop-filter: blur(8px);
+  }
+  .nav-logo {
+    font-family: 'Cinzel', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    letter-spacing: 0.12em;
+    text-decoration: none;
+  }
+  .nav-back {
+    font-family: 'Cinzel', serif;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.75);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--gold-light); }
+
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+  }
+
+  /* ── Header ───────────────────────────────────── */
+  .page-header {
+    text-align: center;
+    padding: 72px 24px 48px;
+    background: linear-gradient(160deg, #0D0804 0%, #1C1208 50%, #0D0804 100%);
+  }
+  .section-label {
+    font-family: 'Cinzel', serif;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .section-label::before, .section-label::after {
+    content: '';
+    display: block;
+    height: 1px;
+    width: 48px;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+  .page-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1.25;
+    margin-bottom: 18px;
+  }
+  .page-sub {
+    max-width: 640px;
+    margin: 0 auto;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: rgba(255,255,255,0.68);
+  }
+
+  /* ── Video grid ───────────────────────────────── */
+  .video-section {
+    padding: 64px 48px 96px;
+  }
+  .video-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .video-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px;
+  }
+  .video-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--card-accent, var(--gold)) 55%, transparent);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.16), 0 0 40px color-mix(in srgb, var(--card-accent, var(--gold)) 22%, transparent);
+    background: #000;
+    transition: box-shadow 0.3s, transform 0.3s;
+  }
+  .video-grid > div:hover .video-frame {
+    box-shadow: 0 24px 60px rgba(0,0,0,0.2), 0 0 55px color-mix(in srgb, var(--card-accent, var(--gold)) 35%, transparent);
+    transform: translateY(-2px);
+  }
+  .video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .video-item-title {
+    font-family: 'Cinzel', serif;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--warm-brown);
+    text-align: center;
+    margin-top: 14px;
+    line-height: 1.4;
+  }
+  .video-item-channel {
+    font-family: 'EB Garamond', serif;
+    font-style: italic;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  @media (max-width: 760px) {
+    .video-section { padding: 48px 20px 72px; }
+    .video-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ── Footer ───────────────────────────────────── */
+  footer {
+    background: var(--warm-dark);
+    text-align: center;
+    padding: 32px 24px;
+  }
+  footer a {
+    font-family: 'Cinzel', serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">YESHUA</a>
+  <a href="/" class="nav-back">← Înapoi pe yeshuabook.com</a>
+</nav>
+
+<header class="page-header">
+  <div class="section-label">Invitat</div>
+  <h1 class="page-title">Silviu Rotariu, ca invitat</h1>
+  <p class="page-sub">Episoade din alte podcasturi și emisiuni în care am fost invitat.</p>
+</header>
+
+<section class="video-section">
+  <div class="video-inner">
+    <div class="video-grid" id="videoGrid">
+      <div style="--card-accent: #736159;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/EoaIXSVoPCY"
+            title="Să fii bărbat înseamnă să fii responsabil  | Silviu Rotariu la Alex Gavriliu Podcast"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Să fii bărbat înseamnă să fii responsabil  | Silviu Rotariu la Alex Gavriliu Podcast</p>
+        <p class="video-item-channel">Alex Gavriliu Podcast</p>
+      </div>
+      <div style="--card-accent: #545763;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/hXyoXFBtvFA"
+            title="SILVIU ROTARIU: “Nimic din creștinism nu mai are legătură cu Iisus”"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">SILVIU ROTARIU: “Nimic din creștinism nu mai are legătură cu Iisus”</p>
+        <p class="video-item-channel">Podcast iCarte, iParte </p>
+      </div>
+      <div style="--card-accent: #403139;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/uxah70KVTeM"
+            title="IERI PASTOR MILIONAR, AZI ATEU | UIMITOAREA POVESTE A LUI SILVIU ROTARIU! #DiscuțiiTABU EP.12"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">IERI PASTOR MILIONAR, AZI ATEU | UIMITOAREA POVESTE A LUI SILVIU ROTARIU! #DiscuțiiTABU EP.12</p>
+        <p class="video-item-channel">Dinu Popescu</p>
+      </div>
+      <div style="--card-accent: #968c7e;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/wCQlL-g3x4I"
+            title="Despre viata, relatii si cum gandesc barbatii cu Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Despre viata, relatii si cum gandesc barbatii cu Silviu Rotariu</p>
+        <p class="video-item-channel">Eliza Kazan</p>
+      </div>
+      <div style="--card-accent: #545763;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/qhH7doqjNQk"
+            title="SILVIU ROTARIU: Nimic din creștinism nu mai are legătură cu Iisus| iCarte, iParte Podcast - Ep. 38"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">SILVIU ROTARIU: Nimic din creștinism nu mai are legătură cu Iisus| iCarte, iParte Podcast - Ep. 38</p>
+        <p class="video-item-channel">Roxana Branisteanu</p>
+      </div>
+      <div style="--card-accent: #475386;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/2vdY6Ed6vfc"
+            title="Iertarea nu e o decizie. Despre Iisus si vindecare, cu Silviu Rotariu | Vibratii Inalte"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Iertarea nu e o decizie. Despre Iisus si vindecare, cu Silviu Rotariu | Vibratii Inalte</p>
+        <p class="video-item-channel">Vibratii Inalte</p>
+      </div>
+      <div style="--card-accent: #9a7e5c;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/GC1CJQnPphQ"
+            title="El este barbatul care stie ce vor femeile - Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">El este barbatul care stie ce vor femeile - Silviu Rotariu</p>
+        <p class="video-item-channel">Oana Ionita - Viata in pasi de dans</p>
+      </div>
+      <div style="--card-accent: #9f7f57;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/sl4ahA-xb2Y"
+            title="Masculinitatea adevărată există? Mituri, roluri și provocările bărbatului modern | Silviu Rotariu"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">Masculinitatea adevărată există? Mituri, roluri și provocările bărbatului modern | Silviu Rotariu</p>
+        <p class="video-item-channel">Florentin Iordache Podcast</p>
+      </div>
+      <div style="--card-accent: #ab8a7c;">
+        <div class="video-frame">
+          <iframe
+            src="https://www.youtube-nocookie.com/embed/XRTyKYRce3Y"
+            title="De ce nu mai rezistă relațiile? Silviu Rotariu | The Feminine #2"
+            loading="lazy"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-item-title">De ce nu mai rezistă relațiile? Silviu Rotariu | The Feminine #2</p>
+        <p class="video-item-channel">Oana Stoianovici | The Feminine Channel</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <a href="/">yeshuabook.com</a>
+</footer>
+
+</body>
+</html>
