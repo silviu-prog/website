@@ -210,6 +210,47 @@
     height: 100%;
     border: 0;
   }
+  .video-frame.external-link {
+    display: block;
+    text-decoration: none;
+  }
+  .video-frame.external-link img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .video-frame.external-link .play-badge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,0.25);
+    transition: background 0.25s;
+  }
+  .video-frame.external-link:hover .play-badge {
+    background: rgba(0,0,0,0.4);
+  }
+  .video-frame.external-link .play-badge svg {
+    width: 64px;
+    height: 64px;
+    filter: drop-shadow(0 4px 16px rgba(0,0,0,0.5));
+  }
+  .video-frame.external-link .yt-note {
+    position: absolute;
+    bottom: 10px;
+    right: 12px;
+    font-family: 'Cinzel', serif;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.9);
+    background: rgba(0,0,0,0.55);
+    padding: 4px 9px;
+    border-radius: 4px;
+  }
   .video-item-title {
     font-family: 'Cinzel', serif;
     font-size: 0.92rem;
@@ -545,16 +586,13 @@
         <p class="video-item-title">Nu suntem pregătiți pentru adevăr și de aceea credem în Dumnezeu | Vlad Borla și Silviu Rotariu</p>
       </div>
       <div style="--card-accent: #a177a3;">
-        <div class="video-frame">
-          <iframe
-            src="https://www.youtube-nocookie.com/embed/dnkryYsgf9Q"
-            title="Cum îți dai seama că cineva e persoana potrivită pentru tine? | Alice Babin și Silviu Rotariu"
-            loading="lazy"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            referrerpolicy="strict-origin-when-cross-origin"
-            allowfullscreen></iframe>
-        </div>
+        <a class="video-frame external-link" href="https://youtu.be/dnkryYsgf9Q" target="_blank" rel="noopener" aria-label="Cum îți dai seama că cineva e persoana potrivită pentru tine? — vezi pe YouTube">
+          <img src="https://i.ytimg.com/vi/dnkryYsgf9Q/hqdefault.jpg" alt="" loading="lazy" />
+          <span class="play-badge">
+            <svg viewBox="0 0 68 48"><path fill="rgba(0,0,0,0.55)" d="M66.52 7.74a8.36 8.36 0 0 0-5.88-5.9C55.6.5 34 .5 34 .5s-21.6 0-26.64 1.34a8.36 8.36 0 0 0-5.88 5.9A87.5 87.5 0 0 0 .5 24a87.5 87.5 0 0 0 1 16.26 8.36 8.36 0 0 0 5.9 5.9C12.4 47.5 34 47.5 34 47.5s21.6 0 26.64-1.34a8.36 8.36 0 0 0 5.88-5.9A87.5 87.5 0 0 0 67.5 24a87.5 87.5 0 0 0-1-16.26z"/><path fill="#fff" d="M45 24 27 14v20"/></svg>
+          </span>
+          <span class="yt-note">Vezi pe YouTube</span>
+        </a>
         <p class="video-item-title">Cum îți dai seama că cineva e persoana potrivită pentru tine? | Alice Babin și Silviu Rotariu</p>
       </div>
       <div style="--card-accent: #a17cae;">
