@@ -20,7 +20,7 @@ const PRODUCTS = {
   // Varianta digitală e dezactivată deocamdată.
 };
 // Transport pe zone (RON). Se poate ajusta oricând.
-const SHIPPING = { RO: 24.99, EASYBOX: 18, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
+const SHIPPING = { RO: 24.99, EASYBOX: 18, MD: 55, EU: 49, EUR_NON_EU: 79, WORLD: 119 };
 const EU_COUNTRIES = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','SK','SI','ES','SE'];
 const EUR_NON_EU_COUNTRIES = ['CH','NO','GB']; // Elveția, Norvegia, UK
 const WORLD_COUNTRIES = ['US','CA','AU']; // SUA, Canada, Australia
@@ -31,6 +31,7 @@ const BOT_COUNTRIES = ['CN','HK','SG','JP','KR','TW','IN','VN','TH','ID','PH','M
 const UNIQ_SQL = "COUNT(DISTINCT COALESCE(ip_hash, 'id' || id))";
 function shippingForCountry(cc) {
   if (cc === 'RO') return SHIPPING.RO;
+  if (cc === 'MD') return SHIPPING.MD;
   if (EU_COUNTRIES.includes(cc)) return SHIPPING.EU;
   if (EUR_NON_EU_COUNTRIES.includes(cc)) return SHIPPING.EUR_NON_EU;
   if (WORLD_COUNTRIES.includes(cc)) return SHIPPING.WORLD;
